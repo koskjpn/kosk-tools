@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VIRNEX | 請求・契約管理</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f7f5f2;--surface:#fff;--border:#e8e3dc;--accent:#7c3aed;--pink:#e1306c;--gold:#f59e0b;--green:#16a34a;--red:#ef4444;--text:#1c1917;--muted:#78716c}
+body{background:var(--bg);color:var(--text);font-family:'Hiragino Sans','Meiryo',sans-serif;min-height:100vh}
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+.sb{background:var(--surface);border-right:1px solid var(--border);padding:20px 14px;display:flex;flex-direction:column;gap:14px;overflow-y:auto}
+.logo{font-size:14px;font-weight:700;color:var(--accent);padding-bottom:12px;border-bottom:1px solid var(--border)}
+.sec-label{font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px}
+.menu-item{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:12px;color:var(--muted);transition:all .15s}
+.menu-item:hover{background:var(--bg);color:var(--text)}
+.menu-item.on{background:#f5f0ff;color:var(--accent);font-weight:600}
+.menu-icon{font-size:15px;width:20px;text-align:center}
+.badge{background:var(--pink);color:#fff;border-radius:10px;padding:1px 6px;font-size:9px;font-weight:700;margin-left:auto}
+
+.main{padding:24px;overflow-y:auto}
+.page{display:none}
+.page.on{display:block}
+.page-title{font-size:18px;font-weight:700;margin-bottom:4px}
+.page-sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+
+/* stats */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px}
+.kpi-icon{font-size:20px;margin-bottom:6px}
+.kpi-label{font-size:10px;color:var(--muted);margin-bottom:3px}
+.kpi-val{font-size:20px;font-weight:700;color:var(--text)}
+.kpi-sub{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* table */
+.tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px}
+.tbl-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.tbl-title{font-size:13px;font-weight:700}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{padding:10px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);background:#faf9f7}
+td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#faf9f7}
+.status-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:10px;font-size:10px;font-weight:700}
+.s-active{background:#dcfce7;color:var(--green)}
+.s-trial{background:#fef3c7;color:var(--gold)}
+.s-cancel{background:#fee2e2;color:var(--red)}
+.s-paid{background:#dcfce7;color:var(--green)}
+.s-unpaid{background:#fee2e2;color:var(--red)}
+.s-pending{background:#fef3c7;color:var(--gold)}
+
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.show{display:flex}
+.modal{background:var(--surface);border-radius:16px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.field{margin-bottom:12px}
+label{font-size:11px;color:var(--muted);display:block;margin-bottom:4px}
+input,select,textarea{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text);background:var(--bg);outline:none;font-family:inherit}
+input:focus,select:focus{border-color:var(--accent)}
+.btn{padding:10px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#a855f7);color:#fff}
+.btn-ghost{background:var(--bg);border:1px solid var(--border);color:var(--muted)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm{padding:5px 10px;font-size:11px;border-radius:6px}
+.btn-danger{background:#fee2e2;color:var(--red);border:1px solid rgba(239,68,68,.3)}
+
+/* invoice preview */
+.invoice-preview{background:#fff;border:1px solid var(--border);border-radius:8px;padding:20px;font-size:12px;line-height:2}
+.inv-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--accent)}
+.inv-title{font-size:20px;font-weight:700;color:var(--accent)}
+.inv-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:12px}
+.inv-table th{background:#f5f0ff;padding:8px 10px;text-align:left;font-weight:600;color:var(--accent)}
+.inv-table td{padding:8px 10px;border-bottom:1px solid var(--border)}
+.inv-total{text-align:right;margin-top:12px;font-size:14px;font-weight:700}
+
+/* alert card */
+.alert-card{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--gold);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;font-size:12px}
+.alert-icon{font-size:18px;flex-shrink:0}
+.alert-text{flex:1}
+.alert-title{font-weight:700;margin-bottom:2px}
+.alert-sub{color:var(--muted);font-size:11px}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:#fff;padding:10px 16px;border-radius:8px;font-size:12px;display:none;z-index:999}
+.toast.show{display:block}
+
+@media print {
+  body > *:not(#invoiceModal) { display: none !important; }
+  #invoiceModal { display: block !important; position: static !important; background: white !important; }
+  #invoiceModal .modal { box-shadow: none !important; border: none !important; max-width: 100% !important; }
+  #invoiceModal button { display: none !important; }
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+<div class="app">
+<div class="sb">
+  <div class="logo">📋 請求・契約管理</div>
+  <div>
+    <div class="sec-label">メニュー</div>
+    <div class="menu-item on" onclick="switchPage('dashboard',this)"><span class="menu-icon">📊</span>ダッシュボード</div>
+    <div class="menu-item" onclick="switchPage('clients',this)"><span class="menu-icon">👥</span>クライアント管理</div>
+    <div class="menu-item" onclick="switchPage('invoices',this)"><span class="menu-icon">🧾</span>請求書 <span class="badge" id="unpaidBadge">0</span></div>
+    <div class="menu-item" onclick="switchPage('contracts',this)"><span class="menu-icon">📝</span>契約管理</div>
+    <div class="menu-item" onclick="switchPage('alerts',this)"><span class="menu-icon">⚠️</span>アラート <span class="badge" id="alertBadge">0</span></div>
+  </div>
+  <div style="margin-top:auto">
+    <div class="sec-label">プラン定義</div>
+    <div style="font-size:11px;color:var(--muted);line-height:1.9;background:#f5f0ff;border-radius:8px;padding:10px">
+      🌸 梅：¥15,000<br>
+      🎋 竹：¥30,000<br>
+      🌲 松：¥60,000
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Dashboard -->
+  <div class="page on" id="page-dashboard">
+    <div class="page-title">ダッシュボード</div>
+    <div class="page-sub" id="dashMonth"></div>
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-icon">👥</div><div class="kpi-label">契約クライアント</div><div class="kpi-val" id="kpiClients">0</div><div class="kpi-sub">件</div></div>
+      <div class="kpi"><div class="kpi-icon">💰</div><div class="kpi-label">今月の売上</div><div class="kpi-val" id="kpiRevenue">¥0</div><div class="kpi-sub">（税抜）</div></div>
+      <div class="kpi"><div class="kpi-icon">🧾</div><div class="kpi-label">未入金</div><div class="kpi-val" id="kpiUnpaid">0</div><div class="kpi-sub">件</div></div>
+      <div class="kpi"><div class="kpi-icon">📅</div><div class="kpi-label">今月の請求書</div><div class="kpi-val" id="kpiInvoices">0</div><div class="kpi-sub">件発行</div></div>
+    </div>
+    <div class="tbl-wrap">
+      <div class="tbl-head"><div class="tbl-title">今月の状況</div><button class="btn btn-primary btn-sm" onclick="genMonthlyInvoices()">🧾 今月分を一括請求</button></div>
+      <div id="dashTable"></div>
+    </div>
+  </div>
+
+  <!-- Clients -->
+  <div class="page" id="page-clients">
+    <div class="page-title">クライアント管理</div>
+    <div class="page-sub">契約中のクライアントを管理します</div>
+    <div class="tbl-wrap">
+      <div class="tbl-head"><div class="tbl-title">クライアント一覧</div><button class="btn btn-primary btn-sm" onclick="showAddClient()">＋ 追加</button></div>
+      <table><thead><tr><th>クライアント名</th><th>@名</th><th>プラン</th><th>月額</th><th>開始日</th><th>状態</th><th>操作</th></tr></thead>
+      <tbody id="clientTable"></tbody></table>
+    </div>
+  </div>
+
+  <!-- Invoices -->
+  <div class="page" id="page-invoices">
+    <div class="page-title">請求書管理</div>
+    <div class="page-sub">発行済み・未払いの請求書を確認します</div>
+    <div class="tbl-wrap">
+      <div class="tbl-head"><div class="tbl-title">請求書一覧</div><button class="btn btn-primary btn-sm" onclick="showCreateInvoice()">＋ 新規発行</button></div>
+      <table><thead><tr><th>請求番号</th><th>クライアント</th><th>対象月</th><th>金額</th><th>状態</th><th>発行日</th><th>操作</th></tr></thead>
+      <tbody id="invoiceTable"></tbody></table>
+    </div>
+  </div>
+
+  <!-- Contracts -->
+  <div class="page" id="page-contracts">
+    <div class="page-title">契約管理</div>
+    <div class="page-sub">契約書・更新管理</div>
+    <div class="tbl-wrap">
+      <div class="tbl-head"><div class="tbl-title">契約一覧</div></div>
+      <table><thead><tr><th>クライアント</th><th>プラン</th><th>開始日</th><th>無料期間終了</th><th>次回更新日</th><th>状態</th></tr></thead>
+      <tbody id="contractTable"></tbody></table>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <div class="page" id="page-alerts">
+    <div class="page-title">アラート</div>
+    <div class="page-sub">要対応の項目です</div>
+    <div id="alertList"></div>
+  </div>
+
+</div>
+</div>
+
+<!-- クライアント追加モーダル -->
+<div class="modal-bg" id="clientModal">
+  <div class="modal">
+    <div class="modal-title">👥 クライアント追加 <button onclick="closeModal('clientModal')" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--muted)">×</button></div>
+    <div class="field"><label>クライアント名</label><input id="c-name" placeholder="〇〇サロン"></div>
+    <div class="field"><label>Instagram @名</label><input id="c-handle" placeholder="sample_salon"></div>
+    <div class="field"><label>メールアドレス</label><input id="c-email" placeholder="client@example.com"></div>
+    <div class="field"><label>プラン</label>
+      <select id="c-plan">
+        <option value="ume">🌸 梅プラン（¥15,000）</option>
+        <option value="take">🎋 竹プラン（¥30,000）</option>
+        <option value="matsu">🌲 松プラン（¥60,000）</option>
+      </select>
+    </div>
+    <div class="field"><label>開始日</label><input type="date" id="c-start"></div>
+    <div class="field"><label>無料期間（月）</label>
+      <select id="c-free">
+        <option value="0">なし</option>
+        <option value="1">1ヶ月</option>
+        <option value="2">2ヶ月</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-primary" onclick="addClient()" style="flex:1">追加</button>
+      <button class="btn btn-ghost" onclick="closeModal('clientModal')">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- 請求書プレビューモーダル -->
+<div class="modal-bg" id="invoiceModal">
+  <div class="modal">
+    <div class="modal-title">🧾 請求書 <button onclick="closeModal('invoiceModal')" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--muted)">×</button></div>
+    <div class="invoice-preview" id="invoicePreview"></div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-primary" onclick="downloadInvoicePDF()" style="flex:1">⬇ PDFダウンロード</button>
+      <button class="btn btn-ghost" onclick="printInvoice()" style="flex:1">🖨 印刷</button>
+      <button class="btn btn-ghost" onclick="closeModal('invoiceModal')">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var clients=[];
+var invoices=[];
+var PLANS={ume:{label:'🌸 梅',price:15000},take:{label:'🎋 竹',price:30000},matsu:{label:'🌲 松',price:60000}};
+
+// ===== Init =====
+(function(){
+  try{
+    clients=JSON.parse(localStorage.getItem('inv_clients')||'[]');
+    invoices=JSON.parse(localStorage.getItem('inv_invoices')||'[]');
+    var bankInfo=localStorage.getItem('inv_bank')||'';
+    if(bankInfo) window._bankInfo=bankInfo;
+  }catch(e){}
+  // デモデータ
+  if(!clients.length){ loadDemoData(); }
+  var now=new Date();
+  document.getElementById('dashMonth').textContent=now.getFullYear()+'年'+(now.getMonth()+1)+'月のサマリー';
+  var today=now.toISOString().slice(0,10);
+  document.getElementById('c-start').value=today;
+  renderAll();
+})();
+
+function loadDemoData(){
+  clients=[
+    {id:'C001',name:'サンプルサロンA',handle:'sample_salon_a',email:'a@example.com',plan:'matsu',start:'2026-07-01',freePeriod:2,status:'active'},
+    {id:'C002',name:'サンプルネイルB',handle:'sample_nail_b',email:'b@example.com',plan:'take',start:'2026-08-01',freePeriod:2,status:'trial'},
+    {id:'C003',name:'サンプルカフェC',handle:'sample_cafe_c',email:'c@example.com',plan:'ume',start:'2026-09-01',freePeriod:1,status:'trial'},
+  ];
+  var now=new Date();
+  var ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  invoices=[
+    {id:'INV-001',clientId:'C001',month:ym,amount:60000,status:'paid',issued:now.toISOString().slice(0,10)},
+    {id:'INV-002',clientId:'C002',month:ym,amount:30000,status:'unpaid',issued:now.toISOString().slice(0,10)},
+  ];
+  try{
+    localStorage.setItem('inv_clients',JSON.stringify(clients));
+    localStorage.setItem('inv_invoices',JSON.stringify(invoices));
+  }catch(e){}
+}
+
+function save(){
+  try{
+    localStorage.setItem('inv_clients',JSON.stringify(clients));
+    localStorage.setItem('inv_invoices',JSON.stringify(invoices));
+  }catch(e){}
+}
+
+function renderAll(){ renderDash(); renderClients(); renderInvoices(); renderContracts(); renderAlerts(); }
+
+// ===== Dashboard =====
+function renderDash(){
+  var now=new Date();
+  var ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  var active=clients.filter(function(c){return c.status==='active';});
+  var monthInvoices=invoices.filter(function(i){return i.month===ym;});
+  var revenue=monthInvoices.filter(function(i){return i.status==='paid';}).reduce(function(s,i){return s+i.amount;},0);
+  var unpaid=invoices.filter(function(i){return i.status==='unpaid';});
+  document.getElementById('kpiClients').textContent=active.length;
+  document.getElementById('kpiRevenue').textContent='¥'+revenue.toLocaleString();
+  document.getElementById('kpiUnpaid').textContent=unpaid.length;
+  document.getElementById('kpiInvoices').textContent=monthInvoices.length;
+  document.getElementById('unpaidBadge').textContent=unpaid.length;
+
+  var rows=clients.map(function(c){
+    var plan=PLANS[c.plan]||{label:c.plan,price:0};
+    var inv=invoices.find(function(i){return i.clientId===c.id&&i.month===ym;});
+    var invStatus=inv?inv.status:'未発行';
+    var statusCls=invStatus==='paid'?'s-paid':invStatus==='unpaid'?'s-unpaid':'s-pending';
+    var statusLabel=invStatus==='paid'?'支払済':'未発行'===invStatus?'未発行':'未払い';
+    return '<tr>'+
+      '<td style="font-weight:600">'+esc(c.name)+'</td>'+
+      '<td style="color:var(--muted)">@'+esc(c.handle)+'</td>'+
+      '<td>'+plan.label+'</td>'+
+      '<td>¥'+plan.price.toLocaleString()+'</td>'+
+      '<td><span class="status-badge '+statusCls+'">'+statusLabel+'</span></td>'+
+      '<td>'+(inv?'<button class="btn btn-ghost btn-sm" onclick="previewInvoice(\''+inv.id+'\')">🧾 確認</button>':'<button class="btn btn-ghost btn-sm" onclick="createInvoiceFor(\''+c.id+'\')">発行</button>')+'</td>'+
+      '</tr>';
+  }).join('');
+  document.getElementById('dashTable').innerHTML='<table><thead><tr><th>クライアント</th><th>@名</th><th>プラン</th><th>月額</th><th>請求状況</th><th>操作</th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+
+// ===== Clients =====
+function renderClients(){
+  document.getElementById('clientTable').innerHTML=clients.map(function(c){
+    var plan=PLANS[c.plan]||{label:c.plan};
+    var statusCls=c.status==='active'?'s-active':c.status==='trial'?'s-trial':'s-cancel';
+    var statusLabel=c.status==='active'?'契約中':c.status==='trial'?'無料期間':'解約済';
+    return '<tr>'+
+      '<td style="font-weight:600">'+esc(c.name)+'</td>'+
+      '<td style="color:var(--muted)">@'+esc(c.handle)+'</td>'+
+      '<td>'+plan.label+'</td>'+
+      '<td>¥'+(PLANS[c.plan]?PLANS[c.plan].price.toLocaleString():'--')+'</td>'+
+      '<td>'+esc(c.start)+'</td>'+
+      '<td><span class="status-badge '+statusCls+'">'+statusLabel+'</span></td>'+
+      '<td><button class="btn btn-ghost btn-sm" onclick="deleteClient(\''+c.id+'\')">削除</button></td>'+
+      '</tr>';
+  }).join('');
+}
+
+// ===== Invoices =====
+function renderInvoices(){
+  document.getElementById('invoiceTable').innerHTML=invoices.map(function(i){
+    var c=clients.find(function(x){return x.id===i.clientId;})||{name:'不明'};
+    var statusCls=i.status==='paid'?'s-paid':i.status==='unpaid'?'s-unpaid':'s-pending';
+    var statusLabel=i.status==='paid'?'支払済':'未払い';
+    return '<tr>'+
+      '<td style="font-family:monospace;color:var(--accent)">'+esc(i.id)+'</td>'+
+      '<td style="font-weight:600">'+esc(c.name)+'</td>'+
+      '<td>'+esc(i.month)+'</td>'+
+      '<td>¥'+i.amount.toLocaleString()+'</td>'+
+      '<td><span class="status-badge '+statusCls+'">'+statusLabel+'</span></td>'+
+      '<td style="color:var(--muted)">'+esc(i.issued)+'</td>'+
+      '<td><button class="btn btn-ghost btn-sm" onclick="previewInvoice(\''+i.id+'\')">確認</button>'+
+      (i.status==='unpaid'?'<button class="btn btn-ghost btn-sm" onclick="markPaid(\''+i.id+'\')" style="margin-left:4px;color:var(--green);border-color:var(--green)">入金確認</button>':'')+'</td>'+
+      '</tr>';
+  }).join('');
+}
+
+// ===== Contracts =====
+function renderContracts(){
+  document.getElementById('contractTable').innerHTML=clients.map(function(c){
+    var plan=PLANS[c.plan]||{label:c.plan};
+    var start=new Date(c.start);
+    var freeEnd=new Date(start); freeEnd.setMonth(freeEnd.getMonth()+parseInt(c.freePeriod||0));
+    var nextRenew=new Date(freeEnd); nextRenew.setMonth(nextRenew.getMonth()+1);
+    var statusCls=c.status==='active'?'s-active':c.status==='trial'?'s-trial':'s-cancel';
+    var statusLabel=c.status==='active'?'契約中':c.status==='trial'?'無料期間':'解約済';
+    return '<tr>'+
+      '<td style="font-weight:600">'+esc(c.name)+'</td>'+
+      '<td>'+plan.label+'</td>'+
+      '<td>'+esc(c.start)+'</td>'+
+      '<td>'+(c.freePeriod>0?freeEnd.toISOString().slice(0,10):'なし')+'</td>'+
+      '<td>'+nextRenew.toISOString().slice(0,10)+'</td>'+
+      '<td><span class="status-badge '+statusCls+'">'+statusLabel+'</span></td>'+
+      '</tr>';
+  }).join('');
+}
+
+// ===== Alerts =====
+function renderAlerts(){
+  var alerts=[];
+  var now=new Date();
+  var ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+
+  // 未払い
+  invoices.filter(function(i){return i.status==='unpaid';}).forEach(function(i){
+    var c=clients.find(function(x){return x.id===i.clientId;})||{name:'不明'};
+    alerts.push({icon:'💸',title:c.name+' '+i.month+' 未払い',sub:'¥'+i.amount.toLocaleString()+' が未入金です',level:'red'});
+  });
+
+  // 無料期間終了間近
+  clients.forEach(function(c){
+    if(!c.freePeriod||c.status!=='trial') return;
+    var freeEnd=new Date(c.start); freeEnd.setMonth(freeEnd.getMonth()+parseInt(c.freePeriod));
+    var diff=Math.ceil((freeEnd-now)/(1000*60*60*24));
+    if(diff<=14 && diff>=0){
+      alerts.push({icon:'⏰',title:c.name+' 無料期間終了まで'+diff+'日',sub:'契約継続の確認をしてください',level:'gold'});
+    }
+  });
+
+  // 今月請求未発行
+  clients.filter(function(c){return c.status==='active';}).forEach(function(c){
+    var hasInv=invoices.find(function(i){return i.clientId===c.id&&i.month===ym;});
+    if(!hasInv){
+      alerts.push({icon:'📋',title:c.name+' '+ym+' 請求書未発行',sub:'今月の請求書がまだ発行されていません',level:'gold'});
+    }
+  });
+
+  document.getElementById('alertBadge').textContent=alerts.length;
+  document.getElementById('alertList').innerHTML=alerts.length?alerts.map(function(a){
+    var borderCol=a.level==='red'?'var(--red)':'var(--gold)';
+    return '<div class="alert-card" style="border-left-color:'+borderCol+'">'+
+      '<div class="alert-icon">'+a.icon+'</div>'+
+      '<div class="alert-text"><div class="alert-title">'+esc(a.title)+'</div><div class="alert-sub">'+esc(a.sub)+'</div></div>'+
+      '</div>';
+  }).join(''):'<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">✅ アラートはありません</div>';
+}
+
+// ===== Add Client =====
+function showAddClient(){ document.getElementById('clientModal').classList.add('show'); }
+function addClient(){
+  var name=document.getElementById('c-name').value.trim();
+  var handle=document.getElementById('c-handle').value.trim();
+  if(!name||!handle){ toast('名前と@名は必須です'); return; }
+  clients.push({
+    id:'C'+Date.now(), name:name, handle:handle,
+    email:document.getElementById('c-email').value,
+    plan:document.getElementById('c-plan').value,
+    start:document.getElementById('c-start').value,
+    freePeriod:parseInt(document.getElementById('c-free').value)||0,
+    status:document.getElementById('c-free').value>0?'trial':'active'
+  });
+  save(); renderAll(); closeModal('clientModal'); toast('クライアントを追加しました');
+  document.getElementById('c-name').value=''; document.getElementById('c-handle').value='';
+}
+function deleteClient(id){
+  if(!confirm('削除しますか？')) return;
+  clients=clients.filter(function(c){return c.id!==id;});
+  save(); renderAll(); toast('削除しました');
+}
+
+// ===== Invoice =====
+function genMonthlyInvoices(){
+  var now=new Date();
+  var ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  var count=0;
+  clients.filter(function(c){return c.status==='active';}).forEach(function(c){
+    var exists=invoices.find(function(i){return i.clientId===c.id&&i.month===ym;});
+    if(!exists){
+      invoices.push({id:'INV-'+Date.now()+'-'+c.id,clientId:c.id,month:ym,amount:PLANS[c.plan].price,status:'unpaid',issued:now.toISOString().slice(0,10)});
+      count++;
+    }
+  });
+  save(); renderAll(); toast(count+'件の請求書を発行しました');
+}
+function createInvoiceFor(clientId){
+  var c=clients.find(function(x){return x.id===clientId;});
+  if(!c) return;
+  var now=new Date();
+  var ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  invoices.push({id:'INV-'+Date.now(),clientId:c.id,month:ym,amount:PLANS[c.plan].price,status:'unpaid',issued:now.toISOString().slice(0,10)});
+  save(); renderAll(); toast('請求書を発行しました');
+}
+function showCreateInvoice(){ toast('ダッシュボードの「一括請求」または各クライアントの「発行」ボタンをご利用ください'); }
+function markPaid(id){
+  var inv=invoices.find(function(i){return i.id===id;});
+  if(inv){ inv.status='paid'; save(); renderAll(); toast('入金確認しました'); }
+}
+function previewInvoice(id){
+  var inv=invoices.find(function(i){return i.id===id;});
+  if(!inv) return;
+  var c=clients.find(function(x){return x.id===inv.clientId;})||{name:'不明',handle:'---'};
+  var plan=PLANS[c.plan]||{label:c.plan,price:inv.amount};
+  var tax=Math.floor(inv.amount*0.1);
+  var total=inv.amount+tax;
+  document.getElementById('invoicePreview').innerHTML=
+    '<div class="inv-header">'+
+    '<div><div class="inv-title">請求書</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+inv.id+'</div></div>'+
+    '<div style="text-align:right;font-size:11px;color:var(--muted)">発行日: '+inv.issued+'<br>対象月: '+inv.month+'</div>'+
+    '</div>'+
+    '<div style="margin-bottom:14px"><div style="font-size:11px;color:var(--muted)">請求先</div><div style="font-size:14px;font-weight:700">'+esc(c.name)+' 様</div><div style="font-size:11px;color:var(--muted)">@'+esc(c.handle)+'</div></div>'+
+    '<table class="inv-table"><thead><tr><th>内容</th><th>数量</th><th>単価</th><th>金額</th></tr></thead>'+
+    '<tbody><tr><td>Instagram運用代行（'+plan.label+'）<br><span style="font-size:10px;color:var(--muted)">'+inv.month+'分</span></td><td>1</td><td>¥'+inv.amount.toLocaleString()+'</td><td>¥'+inv.amount.toLocaleString()+'</td></tr></tbody>'+
+    '</table>'+
+    '<div class="inv-total">小計: ¥'+inv.amount.toLocaleString()+'<br>消費税(10%): ¥'+tax.toLocaleString()+'<br><span style="font-size:16px;color:var(--accent)">合計: ¥'+total.toLocaleString()+'</span></div>'+
+    '<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);line-height:1.9">振込先: 【要設定: 振込先銀行口座】<br>振込期限: '+inv.month+'-末日<br>お問い合わせ: VIRNEX</div>';
+  document.getElementById('invoiceModal').classList.add('show');
+}
+function printInvoice(){ window.print(); }
+
+function downloadInvoicePDF(){
+  try {
+    var el = document.getElementById('invoicePreview');
+    if(!el || !el.innerHTML) { toast('請求書を開いてください'); return; }
+    
+    // jsPDFが読み込まれているか確認
+    if(typeof window.jspdf === 'undefined' && typeof jsPDF === 'undefined'){
+      toast('PDF生成ライブラリを読み込み中...少し待ってから再試行してください');
+      return;
+    }
+    
+    var jsPDFLib = (typeof jsPDF !== 'undefined') ? jsPDF : window.jspdf.jsPDF;
+    var doc = new jsPDFLib({ orientation:'portrait', unit:'mm', format:'a4' });
+    
+    // フォント設定（日本語対応）
+    doc.setFont('helvetica');
+    
+    // 現在表示中の請求書データを取得
+    var inv = invoices.find(function(i){ 
+      return document.getElementById('invoicePreview').innerHTML.indexOf(i.id) > -1; 
+    });
+    if(!inv) { toast('請求書データが見つかりません'); return; }
+    
+    var c = clients.find(function(x){ return x.id === inv.clientId; }) || {name:'不明',handle:'---'};
+    var plan = PLANS[c.plan] || {label:c.plan, price:inv.amount};
+    var tax = Math.floor(inv.amount * 0.1);
+    var total = inv.amount + tax;
+    
+    var margin = 20;
+    var pageW = 210;
+    var y = margin;
+    
+    // タイトル
+    doc.setFontSize(22);
+    doc.setTextColor(30, 30, 30);
+    doc.text('Invoice', margin, y);
+    
+    // 請求書番号・日付（右寄せ）
+    doc.setFontSize(9);
+    doc.setTextColor(120, 120, 120);
+    doc.text(inv.id, pageW - margin, y - 5, {align:'right'});
+    doc.text('発行日: ' + inv.issued, pageW - margin, y, {align:'right'});
+    doc.text('対象月: ' + inv.month, pageW - margin, y + 5, {align:'right'});
+    y += 15;
+    
+    // 区切り線
+    doc.setDrawColor(200, 200, 200);
+    doc.line(margin, y, pageW - margin, y);
+    y += 8;
+    
+    // 請求先
+    doc.setFontSize(9);
+    doc.setTextColor(120, 120, 120);
+    doc.text('請求先', margin, y);
+    y += 5;
+    doc.setFontSize(13);
+    doc.setTextColor(30, 30, 30);
+    doc.text(c.name + ' 様', margin, y);
+    y += 5;
+    doc.setFontSize(9);
+    doc.setTextColor(120, 120, 120);
+    doc.text('@' + c.handle, margin, y);
+    y += 12;
+    
+    // 内訳テーブルヘッダー
+    doc.setFillColor(245, 245, 250);
+    doc.rect(margin, y, pageW - margin*2, 8, 'F');
+    doc.setFontSize(9);
+    doc.setTextColor(80, 80, 80);
+    doc.text('内容', margin + 3, y + 5.5);
+    doc.text('金額', pageW - margin - 3, y + 5.5, {align:'right'});
+    y += 10;
+    
+    // 内訳行
+    doc.setTextColor(30, 30, 30);
+    doc.setFontSize(10);
+    doc.text('SNS運用代行（' + plan.label + '）', margin + 3, y + 5);
+    doc.text('¥' + inv.amount.toLocaleString(), pageW - margin - 3, y + 5, {align:'right'});
+    y += 10;
+    
+    // 区切り線
+    doc.setDrawColor(220, 220, 220);
+    doc.line(margin, y, pageW - margin, y);
+    y += 6;
+    
+    // 小計・税・合計
+    doc.setFontSize(9);
+    doc.setTextColor(120, 120, 120);
+    doc.text('小計', pageW - margin - 35, y);
+    doc.text('¥' + inv.amount.toLocaleString(), pageW - margin - 3, y, {align:'right'});
+    y += 5;
+    doc.text('消費税（10%）', pageW - margin - 35, y);
+    doc.text('¥' + tax.toLocaleString(), pageW - margin - 3, y, {align:'right'});
+    y += 6;
+    
+    // 合計（強調）
+    doc.setFillColor(124, 58, 237);
+    doc.rect(margin, y, pageW - margin*2, 10, 'F');
+    doc.setFontSize(11);
+    doc.setTextColor(255, 255, 255);
+    doc.text('合計（税込）', margin + 4, y + 7);
+    doc.text('¥' + total.toLocaleString(), pageW - margin - 4, y + 7, {align:'right'});
+    y += 16;
+    
+    // 振込先・備考
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+    doc.text('振込期限: ' + inv.month + '末日', margin, y);
+    y += 5;
+    doc.text('本請求書に関するお問い合わせはお気軽にご連絡ください。', margin, y);
+    
+    // ファイル名でダウンロード
+    var filename = 'invoice_' + c.name + '_' + inv.month + '.pdf';
+    doc.save(filename);
+    toast('PDFをダウンロードしました: ' + filename);
+    
+  } catch(e) {
+    console.error('PDF error:', e);
+    // フォールバック: ブラウザの印刷ダイアログ
+    toast('PDF生成エラー。印刷ダイアログを使用してください。');
+    window.print();
+  }
+}
+
+// ===== Utils =====
+function switchPage(id, el){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
+  document.querySelectorAll('.menu-item').forEach(function(m){m.classList.remove('on');});
+  document.getElementById('page-'+id).classList.add('on');
+  el.classList.add('on');
+}
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function setBankInfo(){
+  var current = window._bankInfo || '';
+  var info = prompt('振込先口座情報を入力してください:\n例: 〇〇銀行 △△支店 普通 1234567 カタカナ名', current);
+  if(info===null) return;
+  window._bankInfo = info;
+  try{ localStorage.setItem('inv_bank', info); }catch(e){}
+  toast('振込先を設定しました');
+}
+
+function toast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.className='toast show'; setTimeout(function(){t.className='toast';},2500); }
+</script>
+</body>
+</html>

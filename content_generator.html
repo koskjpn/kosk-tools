@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VIRNEX | コンテンツ生成ツール</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f5f2;
+  --surface:#ffffff;
+  --border:#e8e3dc;
+  --accent:#7c3aed;
+  --accent2:#a855f7;
+  --pink:#e1306c;
+  --gold:#f59e0b;
+  --green:#16a34a;
+  --text:#1c1917;
+  --muted:#78716c;
+  --light:#faf9f7;
+}
+body{background:var(--bg);color:var(--text);font-family:'Hiragino Sans','Meiryo',sans-serif;min-height:100vh}
+
+.app{display:grid;grid-template-columns:300px 1fr;min-height:100vh}
+
+/* sidebar */
+.sb{background:var(--surface);border-right:1px solid var(--border);padding:20px 16px;display:flex;flex-direction:column;gap:16px;overflow-y:auto}
+.sb-logo{font-size:15px;font-weight:700;color:var(--accent);letter-spacing:.02em;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.sb-section{font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+label{font-size:11px;color:var(--muted);display:block;margin-bottom:3px}
+select,input[type=text],input[type=password],textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:12px;color:var(--text);background:var(--light);outline:none;font-family:inherit;transition:border-color .15s}
+select:focus,input:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:60px}
+.field{margin-bottom:10px}
+.btn{padding:10px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all .15s;width:100%;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.btn-primary:hover{opacity:.88}
+.btn-primary:disabled{opacity:.5;cursor:default}
+.btn-ghost{background:var(--light);border:1px solid var(--border);color:var(--muted)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm{padding:6px 10px;font-size:11px;border-radius:6px;width:auto}
+
+/* chip group */
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.chip{padding:4px 10px;border-radius:20px;font-size:11px;cursor:pointer;border:1px solid var(--border);background:var(--light);color:var(--muted);transition:all .15s;white-space:nowrap}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* main */
+.main{padding:24px;overflow-y:auto;background:var(--bg)}
+.main-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.main-title{font-size:18px;font-weight:700;color:var(--text)}
+
+/* tabs */
+.tabs{display:flex;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:20px}
+.tab{flex:1;padding:8px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border-radius:7px;text-align:center;transition:all .15s}
+.tab.on{background:var(--accent);color:#fff}
+
+/* output cards */
+.out-section{display:none}
+.out-section.on{display:block}
+
+.out-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:14px;overflow:hidden}
+.out-card-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.out-card-title{font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px}
+.out-card-body{padding:16px}
+.out-card-actions{display:flex;gap:6px}
+
+/* script sections */
+.script-block{margin-bottom:14px}
+.script-block-label{font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;gap:4px}
+.script-block-time{font-size:10px;background:var(--light);border:1px solid var(--border);border-radius:4px;padding:1px 6px;color:var(--muted);font-weight:400}
+.script-text{font-size:13px;color:var(--text);line-height:1.8;white-space:pre-wrap}
+.script-note{font-size:11px;color:var(--muted);font-style:italic;margin-top:4px}
+
+/* caption output */
+.caption-text{font-size:13px;line-height:1.9;color:var(--text);white-space:pre-wrap;padding:4px 0}
+.hashtag-wrap{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}
+.htag{background:var(--light);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--accent);cursor:pointer}
+.htag:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* idea cards */
+.idea-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.idea-card{background:var(--light);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:all .15s}
+.idea-card:hover{border-color:var(--accent);background:#f5f0ff}
+.idea-card-icon{font-size:22px;margin-bottom:8px}
+.idea-card-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px}
+.idea-card-desc{font-size:11px;color:var(--muted);line-height:1.6}
+.idea-card-type{font-size:10px;background:var(--light);border:1px solid var(--border);border-radius:10px;padding:2px 7px;color:var(--muted);display:inline-block;margin-top:6px}
+
+/* loading */
+.generating{display:none;text-align:center;padding:60px 20px}
+.gen-icon{font-size:40px;margin-bottom:14px;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.7;transform:scale(.95)}}
+.gen-text{font-size:14px;color:var(--muted);margin-bottom:8px}
+.gen-sub{font-size:12px;color:var(--border)}
+
+/* empty */
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-icon{font-size:44px;margin-bottom:14px}
+
+/* copy toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 20px;border-radius:8px;font-size:12px;display:none;z-index:999}
+.toast.show{display:block;animation:fadeUp .2s}
+@keyframes fadeUp{from{opacity:0;transform:translate(-50%,6px)}to{opacity:1;transform:translateX(-50%)}}
+
+/* api key status */
+.key-status{font-size:10px;padding:4px 8px;border-radius:4px;margin-top:4px;display:inline-block}
+.key-ok{background:#dcfce7;color:var(--green)}
+.key-ng{background:#fee2e2;color:#dc2626}
+
+.brand-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:10px}
+.brand-card-head{display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px}
+.copy-small{padding:3px 9px;border-radius:5px;font-size:10px;cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--muted)}
+.copy-small:hover{border-color:var(--accent);color:var(--accent)}
+.color-swatch{width:44px;height:44px;border-radius:8px;flex-shrink:0;cursor:pointer;border:2px solid transparent;transition:all .15s;position:relative}
+.color-swatch:hover{transform:scale(1.1);border-color:var(--text)}
+.color-swatch-label{font-size:9px;color:var(--muted);text-align:center;margin-top:3px;font-family:monospace}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ===== SIDEBAR ===== -->
+<div class="sb">
+  <div class="sb-logo">✨ コンテンツ自動生成</div>
+
+  <!-- API -->
+  <div>
+    <div class="sb-section">Claude API</div>
+    <div class="field">
+      <label>APIキー</label>
+      <input type="password" id="apiKey" placeholder="sk-ant-api03-...">
+      <button class="btn btn-ghost btn-sm" onclick="saveKey()" style="margin-top:5px">保存</button>
+      <div id="keyStatus"></div>
+    </div>
+  </div>
+
+  <!-- 基本設定 -->
+  <div>
+    <div class="sb-section">基本設定</div>
+    <div class="field">
+      <label>業種</label>
+      <select id="genre">
+        <option value="salon">美容室・ヘアサロン</option>
+        <option value="nail">ネイルサロン</option>
+        <option value="esthe">エステ・脱毛サロン</option>
+        <option value="cafe">カフェ・飲食店</option>
+        <option value="seikotsu">整骨院・接骨院</option>
+        <option value="fitness">ジム・フィットネス</option>
+        <option value="shop">セレクトショップ</option>
+        <option value="other">その他</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>店舗名（任意）</label>
+      <input type="text" id="storeName" placeholder="〇〇サロン">
+    </div>
+    <div class="field">
+      <label>コンテンツタイプ</label>
+      <div class="chips" id="typeChips">
+        <div class="chip on" data-val="reel" onclick="toggleChip(this,'type')">リール</div>
+        <div class="chip" data-val="feed" onclick="toggleChip(this,'type')">フィード</div>
+        <div class="chip" data-val="story" onclick="toggleChip(this,'type')">ストーリーズ</div>
+        <div class="chip" data-val="carousel" onclick="toggleChip(this,'type')">カルーセル</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- テーマ -->
+  <div>
+    <div class="sb-section">テーマ・詳細</div>
+    <div class="field">
+      <label>テーマ</label>
+      <div class="chips" id="themeChips">
+        <div class="chip on" data-val="menu" onclick="toggleChip(this,'theme')">メニュー紹介</div>
+        <div class="chip" data-val="staff" onclick="toggleChip(this,'theme')">スタッフ紹介</div>
+        <div class="chip" data-val="before_after" onclick="toggleChip(this,'theme')">B/A</div>
+        <div class="chip" data-val="campaign" onclick="toggleChip(this,'theme')">キャンペーン</div>
+        <div class="chip" data-val="how_to" onclick="toggleChip(this,'theme')">ハウツー</div>
+        <div class="chip" data-val="daily" onclick="toggleChip(this,'theme')">日常</div>
+        <div class="chip" data-val="review" onclick="toggleChip(this,'theme')">お客様の声</div>
+        <div class="chip" data-val="season" onclick="toggleChip(this,'theme')">季節企画</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>追加情報・メモ（任意）</label>
+      <textarea id="extraInfo" placeholder="例：春の新メニュー、カラー料金¥8,800、予約はDMで受付"></textarea>
+    </div>
+    <div class="field">
+      <label>トーン</label>
+      <div class="chips" id="toneChips">
+        <div class="chip on" data-val="friendly" onclick="toggleChip(this,'tone')">親しみやすい</div>
+        <div class="chip" data-val="premium" onclick="toggleChip(this,'tone')">上品・高級感</div>
+        <div class="chip" data-val="pop" onclick="toggleChip(this,'tone')">ポップ・元気</div>
+        <div class="chip" data-val="natural" onclick="toggleChip(this,'tone')">ナチュラル</div>
+        <div class="chip" data-val="cool" onclick="toggleChip(this,'tone')">クール</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" id="genBtn" onclick="generate()">✨ コンテンツを生成</button>
+  <button class="btn btn-ghost" onclick="generateIdeas()">💡 投稿アイデアを出す</button>
+</div>
+
+<!-- ===== MAIN ===== -->
+<div class="main">
+  <div class="main-top">
+    <div class="main-title">生成結果</div>
+    <button class="btn btn-ghost btn-sm" onclick="copyAll()">📋 全てコピー</button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab on" onclick="switchTab('script')">🎬 リール台本</div>
+    <div class="tab" onclick="switchTab('caption')">📝 キャプション</div>
+    <div class="tab" onclick="switchTab('ideas')">💡 アイデア</div>
+    <div class="tab" onclick="switchTab('brand')">🎨 ブランディング</div>
+  </div>
+
+  <!-- Generating -->
+  <div class="generating" id="generating">
+    <div class="gen-icon">✨</div>
+    <div class="gen-text" id="genText">AIが生成しています...</div>
+    <div class="gen-sub">少々お待ちください</div>
+  </div>
+
+  <!-- Script Tab -->
+  <div class="out-section on" id="sec-script">
+    <div class="empty" id="scriptEmpty">
+      <div class="empty-icon">🎬</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">リール台本</div>
+      <div style="font-size:12px;line-height:1.8">左側で設定して「コンテンツを生成」を押すと<br>リール動画の台本が自動で作られます</div>
+    </div>
+    <div id="scriptOutput" style="display:none">
+      <div class="out-card">
+        <div class="out-card-head">
+          <div class="out-card-title">🎬 リール台本 <span style="font-size:11px;color:var(--muted);font-weight:400" id="scriptDuration"></span></div>
+          <div class="out-card-actions">
+            <button class="btn btn-ghost btn-sm" onclick="copyScript()">📋 コピー</button>
+            <button class="btn btn-ghost btn-sm" onclick="generate()">🔄 再生成</button>
+          </div>
+        </div>
+        <div class="out-card-body" id="scriptContent"></div>
+      </div>
+      <div class="out-card">
+        <div class="out-card-head">
+          <div class="out-card-title">🎙 ナレーション原稿</div>
+          <div class="out-card-actions">
+            <button class="btn btn-ghost btn-sm" onclick="copyNarration()">📋 コピー</button>
+          </div>
+        </div>
+        <div class="out-card-body">
+          <div class="script-text" id="narrationContent"></div>
+        </div>
+      </div>
+      <div class="out-card">
+        <div class="out-card-head">
+          <div class="out-card-title">📌 撮影チェックリスト</div>
+        </div>
+        <div class="out-card-body" id="checklistContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Caption Tab -->
+  <div class="out-section" id="sec-caption">
+    <div class="empty" id="captionEmpty">
+      <div class="empty-icon">📝</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">キャプション・ハッシュタグ</div>
+      <div style="font-size:12px;line-height:1.8">生成するとキャプション・ハッシュタグが<br>セットで作られます</div>
+    </div>
+    <div id="captionOutput" style="display:none">
+      <div class="out-card">
+        <div class="out-card-head">
+          <div class="out-card-title">📝 キャプション</div>
+          <div class="out-card-actions">
+            <button class="btn btn-ghost btn-sm" onclick="copyCaption()">📋 コピー</button>
+            <button class="btn btn-ghost btn-sm" onclick="regenCaption()">🔄 再生成</button>
+          </div>
+        </div>
+        <div class="out-card-body">
+          <div class="caption-text" id="captionText"></div>
+        </div>
+      </div>
+      <div class="out-card">
+        <div class="out-card-head">
+          <div class="out-card-title">#️⃣ ハッシュタグ <span id="tagCount" style="font-size:11px;color:var(--muted);font-weight:400"></span></div>
+          <div class="out-card-actions">
+            <button class="btn btn-ghost btn-sm" onclick="copyTags()">📋 コピー</button>
+          </div>
+        </div>
+        <div class="out-card-body">
+          <div class="hashtag-wrap" id="hashtagWrap"></div>
+        </div>
+      </div>
+      <div class="out-card">
+        <div class="out-card-head">
+          <div class="out-card-title">📋 投稿用（キャプション＋タグ）</div>
+          <div class="out-card-actions">
+            <button class="btn btn-primary btn-sm" onclick="copyFull()">📋 全てコピー</button>
+          </div>
+        </div>
+        <div class="out-card-body">
+          <div style="font-size:12px;color:var(--muted);line-height:1.7" id="fullPreview"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ideas Tab -->
+  <div class="out-section" id="sec-ideas">
+    <div class="empty" id="ideasEmpty">
+      <div class="empty-icon">💡</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">投稿アイデア</div>
+      <div style="font-size:12px;line-height:1.8">「投稿アイデアを出す」ボタンを押すと<br>今月の投稿計画が自動で作られます</div>
+    </div>
+    <div id="ideasOutput" style="display:none">
+      <div class="out-card">
+        <div class="out-card-head">
+          <div class="out-card-title">💡 今月の投稿アイデア16選</div>
+          <div class="out-card-actions">
+            <button class="btn btn-ghost btn-sm" onclick="generateIdeas()">🔄 再生成</button>
+          </div>
+        </div>
+        <div class="out-card-body">
+          <div class="idea-grid" id="ideasGrid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== State =====
+var selections = { type:'reel', theme:'menu', tone:'friendly' };
+var generatedScript = '';
+var generatedCaption = '';
+var generatedTags = '';
+var generatedNarration = '';
+
+// ===== Init =====
+(function(){
+  try{
+    var k = localStorage.getItem('content_api_key')||'';
+    if(k){ document.getElementById('apiKey').value=k; updateKeyStatus(true); }
+  }catch(e){}
+})();
+
+// ===== API Key =====
+function saveKey(){
+  var k = document.getElementById('apiKey').value.trim();
+  if(!k){ toast('APIキーを入力してください'); return; }
+  try{ localStorage.setItem('content_api_key',k); }catch(e){}
+  updateKeyStatus(true);
+  toast('APIキーを保存しました');
+}
+function updateKeyStatus(ok){
+  var el = document.getElementById('keyStatus');
+  el.innerHTML = ok ? '<span class="key-status key-ok">✓ 設定済み</span>' : '<span class="key-status key-ng">未設定</span>';
+}
+function getKey(){
+  var k = document.getElementById('apiKey').value.trim();
+  if(!k) try{ k = localStorage.getItem('content_api_key')||''; }catch(e){}
+  return k;
+}
+
+// ===== Chips =====
+function toggleChip(el, group){
+  document.querySelectorAll('#'+group+'Chips .chip').forEach(function(c){ c.classList.remove('on'); });
+  el.classList.add('on');
+  selections[group] = el.dataset.val;
+}
+
+// ===== Tab =====
+function switchTab(id){
+  document.querySelectorAll('.tab').forEach(function(el,i){ el.classList.toggle('on',['script','caption','ideas'][i]===id); });
+  document.querySelectorAll('.out-section').forEach(function(el){ el.classList.remove('on'); });
+  document.getElementById('sec-'+id).classList.add('on');
+}
+
+// ===== Claude API =====
+async function callClaude(prompt, maxTokens){
+  var key = getKey();
+  if(!key) throw new Error('APIキーが設定されていません');
+  var res = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'x-api-key':key,
+      'anthropic-version':'2023-06-01',
+      'content-type':'application/json',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body:JSON.stringify({
+      model:'claude-sonnet-4-6',
+      max_tokens:maxTokens||1500,
+      messages:[{role:'user',content:prompt}]
+    })
+  });
+  if(!res.ok){
+    var e=await res.json().catch(function(){return{};});
+    throw new Error((e.error&&e.error.message)||'APIエラー'+res.status);
+  }
+  var d=await res.json();
+  return d.content[0].text;
+}
+
+// ===== Generate All =====
+async function generate(){
+  var key=getKey();
+  if(!key){ toast('左側でAPIキーを設定してください'); return; }
+
+  var genre=document.getElementById('genre').value;
+  var genreLabel={'salon':'美容室・ヘアサロン','nail':'ネイルサロン','esthe':'エステ・脱毛サロン','cafe':'カフェ・飲食店','seikotsu':'整骨院・接骨院','fitness':'ジム・フィットネス','shop':'セレクトショップ','other':'店舗'}[genre]||genre;
+  var store=document.getElementById('storeName').value||genreLabel;
+  var theme={'menu':'メニュー紹介','staff':'スタッフ紹介','before_after':'ビフォーアフター','campaign':'キャンペーン告知','how_to':'ハウツー・お役立ち','daily':'日常の様子','review':'お客様の声','season':'季節企画'}[selections.theme]||selections.theme;
+  var tone={'friendly':'親しみやすくカジュアル','premium':'上品で落ち着いた','pop':'明るくポップ','natural':'ナチュラルで温かみのある','cool':'スタイリッシュでクール'}[selections.tone]||'';
+  var extra=document.getElementById('extraInfo').value;
+  var ctype={'reel':'リール動画（縦型・30秒以内）','feed':'フィード投稿（静止画）','story':'ストーリーズ','carousel':'カルーセル投稿（複数枚）'}[selections.type]||'投稿';
+
+  showGenerating('台本・キャプションを生成中...');
+
+  try{
+    // 台本とキャプションを同時生成（1回のAPIコールで）
+    var prompt = 'あなたはInstagramマーケティングの専門家です。以下の条件で、リール台本・ナレーション・キャプション・ハッシュタグをすべて生成してください。\n\n' +
+      '店舗: '+store+' （'+genreLabel+'）\n'+
+      'コンテンツタイプ: '+ctype+'\n'+
+      'テーマ: '+theme+'\n'+
+      'トーン: '+tone+'\n'+
+      (extra?'追加情報: '+extra+'\n':'')+
+      '\n以下のJSON形式で出力してください（他のテキストは不要）:\n'+
+      '{\n'+
+      '  "script": [\n'+
+      '    {"scene": 1, "time": "0-3秒", "label": "フック", "visual": "撮影するもの・アングルの説明", "text": "テキストオーバーレイの文字", "narration": "ナレーション文"},\n'+
+      '    {"scene": 2, "time": "3-8秒", "label": "本編①", "visual": "...", "text": "...", "narration": "..."}\n'+
+      '    ... （合計6〜8シーン）\n'+
+      '  ],\n'+
+      '  "checklist": ["撮影前に確認すること①", "②", "③", "④", "⑤"],\n'+
+      '  "caption": "キャプション本文（200〜300文字、絵文字あり、最後に行動喚起）",\n'+
+      '  "hashtags": ["#タグ1", "#タグ2", ...（15〜25個）]\n'+
+      '}';
+
+    var result = await callClaude(prompt, 2500);
+
+    // JSON抽出
+    var jsonMatch = result.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) throw new Error('AI応答のJSON形式が正しくありません。再生成してください。');
+    var data;
+    try {
+      data = JSON.parse(jsonMatch[0]);
+    } catch(parseErr) {
+      throw new Error('JSONパース失敗。再生成してください。');
+    }
+    if(!data.script && !data.caption) throw new Error('生成データが不完全です。再生成してください。');
+
+    // 保存
+    generatedScript = data.script || [];
+    generatedNarration = (data.script||[]).map(function(s){ return s.narration||''; }).join('\n');
+    generatedCaption = data.caption || '';
+    generatedTags = (data.hashtags||[]).join(' ');
+
+    hideGenerating();
+    renderScript(data.script||[], data.checklist||[]);
+    renderCaption(data.caption||'', data.hashtags||[]);
+    switchTab('script');
+    toast('生成完了！');
+
+  }catch(e){
+    hideGenerating();
+    toast('エラー: '+e.message);
+  }
+}
+
+// ===== Generate Ideas =====
+async function generateIdeas(){
+  var key=getKey();
+  if(!key){ toast('APIキーを設定してください'); return; }
+
+  var genre=document.getElementById('genre').value;
+  var genreLabel={'salon':'美容室・ヘアサロン','nail':'ネイルサロン','esthe':'エステ・脱毛サロン','cafe':'カフェ・飲食店','seikotsu':'整骨院・接骨院','fitness':'ジム・フィットネス','shop':'セレクトショップ','other':'店舗'}[genre]||genre;
+
+  showGenerating('投稿アイデアを生成中...');
+  switchTab('ideas');
+
+  try{
+    var now = new Date();
+    var month = now.getMonth()+1;
+    var prompt = ''+genreLabel+'のInstagram投稿アイデアを16個考えてください。\n'+
+      '現在の月: '+month+'月\n'+
+      '季節感・イベントを考慮してください。\n\n'+
+      '以下のJSON配列で出力してください（他のテキスト不要）:\n'+
+      '[{"icon":"絵文字1つ","title":"投稿タイトル","desc":"投稿内容の説明（1文）","type":"リール|フィード|カルーセル|ストーリーズ","theme":"テーマ分類"},...]';
+
+    var result = await callClaude(prompt, 2000);
+    var jsonMatch = result.match(/\[[\s\S]*\]/);
+    if(!jsonMatch) throw new Error('解析失敗');
+    var ideas = JSON.parse(jsonMatch[0]);
+
+    hideGenerating();
+    renderIdeas(ideas);
+
+  }catch(e){
+    hideGenerating();
+    toast('エラー: '+e.message);
+  }
+}
+
+// ===== Regenerate Caption only =====
+async function regenCaption(){
+  var key=getKey();
+  if(!key){ toast('APIキーを設定してください'); return; }
+  showGenerating('キャプションを再生成中...');
+  var genre=document.getElementById('genre').value;
+  var genreLabel={'salon':'美容室・ヘアサロン','nail':'ネイルサロン','esthe':'エステ・脱毛サロン','cafe':'カフェ・飲食店','seikotsu':'整骨院・接骨院','fitness':'ジム・フィットネス','shop':'セレクトショップ'}[genre]||genre;
+  var extra=document.getElementById('extraInfo').value;
+  var theme={'menu':'メニュー紹介','staff':'スタッフ紹介','before_after':'ビフォーアフター','campaign':'キャンペーン告知','how_to':'ハウツー','daily':'日常','review':'お客様の声','season':'季節企画'}[selections.theme]||'';
+  try{
+    var prompt = genreLabel+'の'+theme+'投稿のInstagramキャプションを作成。200〜300文字、絵文字使用、行動喚起含む。'+(extra?'情報: '+extra:'')+'\nキャプション本文のみ出力。';
+    var result = await callClaude(prompt, 600);
+    generatedCaption = result;
+    hideGenerating();
+    renderCaption(result, (generatedTags||'').split(' ').filter(Boolean));
+    switchTab('caption');
+  }catch(e){
+    hideGenerating();
+    toast('エラー: '+e.message);
+  }
+}
+
+// ===== Render =====
+function renderScript(scenes, checklist){
+  document.getElementById('scriptEmpty').style.display='none';
+  document.getElementById('scriptOutput').style.display='';
+  var total = scenes.length ? scenes[scenes.length-1].time : '';
+  document.getElementById('scriptDuration').textContent = scenes.length+'シーン';
+
+  var colors=['#7c3aed','#a855f7','#e1306c','#f59e0b','#16a34a','#0ea5e9','#f43f5e','#8b5cf6'];
+  document.getElementById('scriptContent').innerHTML = scenes.map(function(s,i){
+    var col = colors[i%colors.length];
+    return '<div class="script-block">'+
+      '<div class="script-block-label" style="color:'+col+'">'+
+      'SCENE '+s.scene+' <span class="script-block-time">'+s.time+'</span> '+
+      '<span style="background:'+col+'22;color:'+col+';padding:1px 7px;border-radius:10px;font-size:9px;margin-left:4px">'+s.label+'</span>'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px">'+
+      '<div style="background:#f5f0ff;border-radius:7px;padding:10px;font-size:12px;color:var(--text)">'+
+      '<div style="font-size:9px;color:'+col+';font-weight:700;margin-bottom:4px">📷 映像・撮影</div>'+
+      esc(s.visual)+'</div>'+
+      '<div style="background:#fafafa;border:1px solid var(--border);border-radius:7px;padding:10px;font-size:12px;color:var(--text)">'+
+      '<div style="font-size:9px;color:var(--muted);font-weight:700;margin-bottom:4px">💬 テキスト</div>'+
+      esc(s.text)+'</div>'+
+      '</div>'+
+      '</div>';
+  }).join('');
+
+  document.getElementById('narrationContent').textContent = scenes.map(function(s,i){
+    return 'SCENE '+s.scene+'（'+s.time+'）\n'+s.narration;
+  }).join('\n\n');
+
+  document.getElementById('checklistContent').innerHTML = checklist.map(function(item){
+    return '<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">'+
+      '<span style="color:var(--accent);flex-shrink:0">□</span><span>'+esc(item)+'</span></div>';
+  }).join('');
+}
+
+function renderCaption(caption, tags){
+  document.getElementById('captionEmpty').style.display='none';
+  document.getElementById('captionOutput').style.display='';
+  document.getElementById('captionText').textContent = caption;
+  document.getElementById('tagCount').textContent = tags.length+'個';
+  document.getElementById('hashtagWrap').innerHTML = tags.map(function(t){
+    return '<span class="htag" onclick="toast(\''+esc(t)+' コピー\')">'+esc(t)+'</span>';
+  }).join('');
+  var full = caption+'\n\n.\n.\n.\n'+tags.join(' ');
+  document.getElementById('fullPreview').innerHTML = full.replace(/\n/g,'<br>');
+  generatedTags = tags.join(' ');
+}
+
+function renderIdeas(ideas){
+  document.getElementById('ideasEmpty').style.display='none';
+  document.getElementById('ideasOutput').style.display='';
+  document.getElementById('ideasGrid').innerHTML = ideas.slice(0,16).map(function(idea){
+    return '<div class="idea-card" onclick="applyIdea(\''+esc(idea.theme)+'\')">'+
+      '<div class="idea-card-icon">'+idea.icon+'</div>'+
+      '<div class="idea-card-title">'+esc(idea.title)+'</div>'+
+      '<div class="idea-card-desc">'+esc(idea.desc)+'</div>'+
+      '<span class="idea-card-type">'+esc(idea.type)+'</span>'+
+      '</div>';
+  }).join('');
+}
+
+function applyIdea(theme){
+  document.getElementById('extraInfo').value = theme;
+  switchTab('script');
+  toast('テーマを設定しました。「生成」を押してください');
+}
+
+// ===== Copy =====
+function copyScript(){
+  var scenes = generatedScript;
+  if(!scenes||!scenes.length){ toast('まず生成してください'); return; }
+  var text = scenes.map(function(s){
+    return 'SCENE '+s.scene+'（'+s.time+'）【'+s.label+'】\n映像: '+s.visual+'\nテキスト: '+s.text+'\nナレーション: '+s.narration;
+  }).join('\n\n');
+  copy(text);
+}
+function copyNarration(){ copy(generatedNarration||'まず生成してください'); }
+function copyCaption(){ copy(generatedCaption||'まず生成してください'); }
+function copyTags(){ copy(generatedTags||'まず生成してください'); }
+function copyFull(){
+  copy((generatedCaption||'')+'\n\n.\n.\n.\n'+(generatedTags||''));
+}
+function copyAll(){
+  var text='【リール台本】\n'+(generatedScript.map(function(s){return 'S'+s.scene+'('+s.time+') '+s.label+'\n映像:'+s.visual+'\nテキスト:'+s.text+'\nナレ:'+s.narration;}).join('\n\n'))+
+    '\n\n【キャプション】\n'+generatedCaption+'\n\n'+generatedTags;
+  copy(text);
+}
+function copy(text){
+  navigator.clipboard.writeText(text).then(function(){ toast('コピーしました！'); }).catch(function(){ toast('コピー失敗'); });
+}
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ===== Loading =====
+function showGenerating(msg){
+  document.getElementById('generating').style.display='';
+  document.getElementById('genText').textContent=msg||'生成中...';
+  document.querySelectorAll('.out-section').forEach(function(el){ el.classList.remove('on'); });
+  document.getElementById('generating').style.display='';
+}
+function hideGenerating(){
+  document.getElementById('generating').style.display='none';
+}
+
+// ===== Toast =====
+function toast(msg,dur){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show';
+  setTimeout(function(){t.className='toast';},dur||2000);
+}
+
+// ===== BRANDING KIT =====
+var brandData = {};
+
+async function generateBranding(){
+  var key = getKey();
+  if(!key){alert('APIキーを設定してください');return;}
+  var name = document.getElementById('brandName').value.trim();
+  var concept = document.getElementById('brandConcept').value.trim();
+  var genre = document.querySelector('.chip-genre.on') ? document.querySelector('.chip-genre.on').textContent : document.querySelector('[onclick*="genre"]') ? '' : '';
+
+  // genreを既存の選択から取得
+  var genreEl = document.querySelector('.chip.on[data-type="genre"]') || document.querySelector('#genreChips .chip.on');
+  var genreText = genreEl ? genreEl.textContent : '業種未選択';
+
+  var brandName = name || 'あなたのブランド';
+  var brandConcept = concept || genreText;
+
+  document.getElementById('brandResult').style.display = 'none';
+
+  var prompt = [
+    'ブランド名「'+brandName+'」のブランディングキットを作成してください。',
+    'コンセプト: '+brandConcept,
+    '',
+    '以下の形式でJSON出力してください（他テキスト不要）:',
+    '{',
+    '  "colors": [',
+    '    {"name":"プライマリ","hex":"#XXXXXX","use":"メインブランドカラー"},',
+    '    {"name":"セカンダリ","hex":"#XXXXXX","use":"サブカラー"},',
+    '    {"name":"アクセント","hex":"#XXXXXX","use":"強調・CTA"},',
+    '    {"name":"ベース","hex":"#XXXXXX","use":"背景・テキスト"},',
+    '    {"name":"テキスト","hex":"#XXXXXX","use":"本文テキスト"}',
+    '  ],',
+    '  "fonts": {',
+    '    "heading": "見出しフォント名と特徴",',
+    '    "body": "本文フォント名と特徴",',
+    '    "accent": "アクセントフォント名と特徴",',
+    '    "note": "フォント選定理由と使い方"',
+    '  },',
+    '  "voice": {',
+    '    "tone": "ブランドトーン（例：親しみやすく・プロフェッショナル）",',
+    '    "do": ["すること1","すること2","すること3"],',
+    '    "dont": ["しないこと1","しないこと2","しないこと3"],',
+    '    "words": ["ブランドキーワード1","キーワード2","キーワード3","キーワード4","キーワード5"]',
+    '  },',
+    '  "catchcopy": [',
+    '    "キャッチコピー案1",',
+    '    "キャッチコピー案2",',
+    '    "キャッチコピー案3",',
+    '    "キャッチコピー案4",',
+    '    "キャッチコピー案5"',
+    '  ],',
+    '  "post_format": {',
+    '    "hook": "冒頭フック（1行目）のパターン例",',
+    '    "body": "本文構成のパターン",',
+    '    "cta": "CTAの書き方パターン",',
+    '    "example": "投稿文の例（150文字程度）"',
+    '  },',
+    '  "hashtags": {',
+    '    "brand": ["#ブランド専用タグ1","#タグ2"],',
+    '    "niche": ["#ニッチタグ1","#タグ2","#タグ3","#タグ4","#タグ5"],',
+    '    "popular": ["#人気タグ1","#タグ2","#タグ3"]',
+    '  }',
+    '}'
+  ].join('\n');
+
+  // ローディング表示
+  document.getElementById('generating').style.display = 'flex';
+  document.getElementById('genText').textContent = 'ブランディングキットを生成中...';
+
+  try{
+    var res = await callClaude([{role:'user',content:prompt}], 3000);
+    var jm = res.match(/\{[\s\S]*\}/);
+    if(!jm) throw new Error('解析失敗');
+    brandData = JSON.parse(jm[0]);
+    renderBrandKit(brandData, brandName);
+  }catch(e){
+    alert('エラー: '+e.message);
+  }
+  document.getElementById('generating').style.display = 'none';
+}
+
+function renderBrandKit(data, brandName){
+  // カラーパレット
+  var palette = document.getElementById('colorPalette');
+  palette.innerHTML = (data.colors||[]).map(function(c){
+    var hex = c.hex;
+    return '<div style="text-align:center">'+
+      '<div class="color-swatch" style="background:'+hex+'" data-hex="'+hex+'" onclick="navigator.clipboard.writeText(this.dataset.hex)" title="クリックでコピー"></div>'+
+      '<div class="color-swatch-label">'+hex+'<br>'+c.name+'</div>'+
+      '</div>';
+  }).join('');
+  document.getElementById('colorText').innerHTML = (data.colors||[]).map(function(c){
+    return '<b style="color:var(--text)">'+c.name+'</b> '+c.hex+' — '+c.use;
+  }).join('<br>');
+
+  // フォント
+  var f = data.fonts||{};
+  document.getElementById('fontText').innerHTML =
+    '<b style="color:var(--text)">見出し:</b> '+f.heading+'<br>'+
+    '<b style="color:var(--text)">本文:</b> '+f.body+'<br>'+
+    '<b style="color:var(--text)">アクセント:</b> '+f.accent+'<br>'+
+    '<b style="color:var(--text)">メモ:</b> '+f.note;
+
+  // ボイス
+  var v = data.voice||{};
+  document.getElementById('voiceText').innerHTML =
+    '<b style="color:var(--text)">トーン:</b> '+v.tone+'<br>'+
+    '<b style="color:var(--text)">すること:</b> '+(v.do||[]).join(' / ')+'<br>'+
+    '<b style="color:var(--text)">しないこと:</b> '+(v.dont||[]).join(' / ')+'<br>'+
+    '<b style="color:var(--text)">キーワード:</b> '+(v.words||[]).join('・');
+
+  // キャッチコピー
+  document.getElementById('copyText').innerHTML = (data.catchcopy||[]).map(function(c,i){
+    return '<div style="padding:6px 10px;background:var(--bg);border-radius:6px;margin-bottom:5px;display:flex;align-items:center;justify-content:space-between" data-copy="'+i+'">'+
+      '<span style="color:var(--text)">'+c+'</span>'+
+      '<button onclick="copyCatch(this)" data-text="'+c.replace(/"/g,'&quot;')+'" style="padding:2px 7px;border-radius:4px;font-size:9px;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--muted)">コピー</button>'+
+      '</div>';
+  }).join('');
+
+  // 投稿フォーマット
+  var p = data.post_format||{};
+  document.getElementById('postText').innerHTML =
+    '<b style="color:var(--text)">冒頭フック:</b> '+p.hook+'<br>'+
+    '<b style="color:var(--text)">本文構成:</b> '+p.body+'<br>'+
+    '<b style="color:var(--text)">CTA:</b> '+p.cta+'<br><br>'+
+    '<div style="background:var(--bg);border-radius:8px;padding:10px;border:1px solid var(--border)"><b style="color:var(--text)">投稿例:</b><br>'+p.example+'</div>';
+
+  // ハッシュタグ
+  var h2 = data.hashtags||{};
+  var allTags = [].concat(h2.brand||[],h2.niche||[],h2.popular||[]);
+  document.getElementById('hashText').innerHTML =
+    '<b style="color:var(--text)">ブランドタグ:</b> '+(h2.brand||[]).join(' ')+'<br>'+
+    '<b style="color:var(--text)">ニッチタグ:</b> '+(h2.niche||[]).join(' ')+'<br>'+
+    '<b style="color:var(--text)">人気タグ:</b> '+(h2.popular||[]).join(' ')+'<br><br>'+
+    '<div style="background:var(--bg);border-radius:8px;padding:10px;border:1px solid var(--border);font-family:monospace;font-size:11px;color:var(--text)">'+allTags.join(' ')+'</div>';
+
+  document.getElementById('brandResult').style.display = '';
+}
+
+function copyBrand(type){
+  var el;
+  if(type==='colors') el=document.getElementById('colorText');
+  else if(type==='fonts') el=document.getElementById('fontText');
+  else if(type==='voice') el=document.getElementById('voiceText');
+  else if(type==='copy') el=document.getElementById('copyText');
+  else if(type==='post') el=document.getElementById('postText');
+  else if(type==='hash') el=document.getElementById('hashText');
+  if(el) navigator.clipboard.writeText(el.innerText).then(function(){
+    alert('コピーしました！');
+  });
+}
+
+function copyCatch(btn){
+  var text = btn.getAttribute('data-text');
+  navigator.clipboard.writeText(text).then(function(){btn.textContent='✓';setTimeout(function(){btn.textContent='コピー';},1500);});
+}
+
+function downloadBrandKit(){
+  if(!brandData.colors){alert('先にブランディングキットを生成してください');return;}
+  var nameEl = document.getElementById('brandName');
+  var brandName = nameEl ? nameEl.value.trim() || 'Brand' : 'Brand';
+  var colors = brandData.colors||[];
+  var primary = colors[0]?colors[0].hex:'#7c3aed';
+  var secondary = colors[1]?colors[1].hex:'#e1306c';
+
+  var html = '<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>'+brandName+' ブランドキット</title>'+
+    '<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">'+
+    '<style>*{box-sizing:border-box;margin:0;padding:0}body{background:#09090f;color:#f0f0f8;font-family:"Noto Sans JP",sans-serif;padding:40px}'+
+    'h1{font-size:32px;background:linear-gradient(135deg,'+primary+','+secondary+');-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}'+
+    '.sec{background:#111118;border:1px solid #2a2a3a;border-radius:14px;padding:24px;margin-bottom:20px}'+
+    '.sec-title{font-size:13px;font-weight:700;color:#7a7a90;letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px}'+
+    '.swatches{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}'+
+    '.sw{width:56px;height:56px;border-radius:10px;margin-bottom:4px}'+
+    '.sw-name{font-size:10px;color:#7a7a90;text-align:center;font-family:monospace}'+
+    '.tag{display:inline-block;padding:4px 10px;border-radius:20px;font-size:11px;background:#18181f;border:1px solid #2a2a3a;color:#a0a0b8;margin:2px}'+
+    '.copy-box{background:#18181f;border:1px solid #2a2a3a;border-radius:8px;padding:14px;font-size:12px;color:#a0a0b8;line-height:1.9}'+
+    '.catch-item{background:#18181f;border:1px solid #2a2a3a;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:14px;color:#f0f0f8}'+
+    '</style></head><body>'+
+    '<h1>'+brandName+'</h1>'+
+    '<p style="color:#7a7a90;margin-bottom:32px;font-size:14px">'+(document.getElementById('brandConcept')?document.getElementById('brandConcept').value:'')+'</p>'+
+
+    '<div class="sec"><div class="sec-title">🎨 カラーパレット</div>'+
+    '<div class="swatches">'+(brandData.colors||[]).map(function(c){return '<div><div class="sw" style="background:'+c.hex+'"></div><div class="sw-name">'+c.hex+'<br>'+c.name+'</div></div>';}).join('')+'</div></div>'+
+
+    '<div class="sec"><div class="sec-title">✍️ フォント</div><div class="copy-box">'+document.getElementById('fontText').innerHTML+'</div></div>'+
+
+    '<div class="sec"><div class="sec-title">💬 ブランドボイス</div><div class="copy-box">'+document.getElementById('voiceText').innerHTML+'</div></div>'+
+
+    '<div class="sec"><div class="sec-title">📣 キャッチコピー案</div>'+
+    (brandData.catchcopy||[]).map(function(c){return '<div class="catch-item">'+c+'</div>';}).join('')+'</div>'+
+
+    '<div class="sec"><div class="sec-title">🏷 ハッシュタグセット</div><div class="copy-box">'+document.getElementById('hashText').innerHTML+'</div></div>'+
+
+    '</body></html>';
+
+  var a = document.createElement('a');
+  a.href = 'data:text/html;charset=utf-8,'+encodeURIComponent(html);
+  a.download = brandName+'_brandkit.html';
+  a.click();
+}
+</script>
+</body>
+</html>function switchTab(name){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
+  document.querySelectorAll('.out-section').forEach(function(s){s.classList.remove('on');});
+  event.target.classList.add('on');
+  var secId = name==='brand' ? 'sec-brand' : 'sec-'+name.slice(0,4);
+  var sec = document.getElementById(secId);
+  if(sec) sec.classList.add('on');
+}!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>コンテンツ自動生成ツール</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f5f2;
+  --surface:#ffffff;
+  --border:#e8e3dc;
+  --accent:#7c3aed;
+  --accent2:#a855f7;
+  --pink:#e1306c;
+  --gold:#f59e0b;
+  --green:#16a34a;
+  --text:#1c1917;
+  --muted:#78716c;
+  --light:#faf9f7;
+}
+body{background:var(--bg);color:var(--text);font-family:'Hiragino Sans','Meiryo',sans-serif;min-height:100vh}
+
+.app{display:grid;grid-template-columns:300px 1fr;min-height:100vh}
+
+/* sidebar */
+.sb{background:var(--surface);border-right:1px solid var(--border);padding:20px 16px;display:flex;flex-direction:column;gap:16px;overflow-y:auto}
+.sb-logo{font-size:15px;font-weight:700;color:var(--accent);letter-spacing:.02em;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.sb-section{font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+label{font-size:11px;color:var(--muted);display:block;margin-bottom:3px}
+select,input[type=text],input[type=password],textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:12px;color:var(--text);background:var(--light);outline:none;font-family:inherit;transition:border-color .15s}
+select:focus,input:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:60px}
+.field{margin-bottom:10px}
+.btn{padding:10px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all .15s;width:100%;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.btn-primary:hover{opacity:.88}
+.btn-primary:disabled{opacity:.5;cursor:default}
+.btn-ghost{background:var(--light);border:1px solid var(--border);color:var(--muted)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm{padding:6px 10px;font-size:11px;border-radius:6px;width:auto}
+
+/* chip group */
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.chip{padding:4px 10px;border-radius:20px;font-size:11px;cursor:pointer;border:1px solid var(--border);background:var(--light);color:var(--muted);transition:all .15s;white-space:nowrap}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* main */
+.main{padding:24px;overflow-y:auto;background:var(--bg)}
+.main-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.main-title{font-size:18px;font-weight:700;color:var(--text)}
+
+/* tabs */
+.tabs{display:flex;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:20px}
+.tab{flex:1;padding:8px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border-radius:7px;text-align:center;transition:all .15s}
+.tab.on{background:var(--accent);color:#fff}
+
+/* output cards */
+.out-section{display:none}
+.out-section.on{display:block}
+
+.out-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:14px;overflow:hidden}
+.out-card-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.out-card-title{font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px}
+.out-card-body{padding:16px}
+.out-card-actions{display:flex;gap:6px}
+
+/* script sections */
+.script-block{margin-bottom:14px}
+.script-block-label{font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;gap:4px}
+.script-block-time{font-size:10px;background:var(--light);border:1px solid var(--border);border-radius:4px;padding:1px 6px;color:var(--muted);font-weight:400}
+.script-text{font-size:13px;color:var(--text);line-height:1.8;white-space:pre-wrap}
+.script-note{font-size:11px;color:var(--muted);font-style:italic;margin-top:4px}
+
+/* caption output */
+.caption-text{font-size:13px;line-height:1.9;color:var(--text);white-space:pre-wrap;padding:4px 0}
+.hashtag-wrap{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}
+.htag{background:var(--light);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--accent);cursor:pointer}
+.htag:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* idea cards */
+.idea-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.idea-card{background:var(--light);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:all .15s}
+.idea-card:hover{border-color:var(--accent);background:#f5f0ff}
+.idea-card-icon{font-size:22px;margin-bottom:8px}
+.idea-card-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px}
+.idea-card-desc{font-size:11px;color:var(--muted);line-height:1.6}
+.idea-card-type{font-size:10px;background:var(--light);border:1px solid var(--border);border-radius:10px;padding:2px 7px;color:var(--muted);display:inline-block;margin-top:6px}
+
+/* loading */
+.generating{display:none;text-align:center;padding:60px 20px}
+.gen-icon{font-size:40px;margin-bottom:14px;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.7;transform:scale(.95)}}
+.gen-text{font-size:14px;color:var(--muted);margin-bottom:8px}
+.gen-sub{font-size:12px;color:var(--border)}
+
+/* empty */
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-icon{font-size:44px;margin-bottom:14px}
+
+/* copy toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 20px;border-radius:8px;font-size:12px;display:none;z-index:999}
+.toast.show{display:block;animation:fadeUp .2s}
+@keyframes fadeUp{from{opacity:0;transform:translate(-50%,6px)}to{opacity:1;transform:translateX(-50%)}}
+
+/* api key status */
+.key-status{font-size:10px;padding:4px 8px;border-radius:4px;margin-top:4px;display:inline-block}
+.key-ok{background:#dcfce7;color:var(--green)}
+.key-ng{background:#fee2e2;color:#dc2626}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ===== SIDEBAR ===== -->
+<div class="sb">
+  <div class="sb-logo">✨ コンテンツ自動生成</div>
+
+  <!-- API -->
+  <div>
+    <div class="sb-section">Claude API</div>
+    <div class="field">
+      <label>APIキー</label>
+      <input type="password" id="apiKey" placeholder="sk-ant-api03-...">
+      <button class="btn btn-ghost btn-sm" onclick="saveKey()" style="margin-top:5px">保存</button>
+      <div id="keyStatus"></div>
+    </div>
+  </div>
+
+  <!-- 基本設定 -->
+  <div>
+    <div class="sb-section">基本設定</div>
+    <div class="field">
+      <label>業種</label>
+      <select id="genre">
+        <option value="salon">美容室・ヘアサロン</option>
+        <option value="nail">ネイルサロン</option>
+        <option value="esthe">エステ・脱毛サロン</option>
+        <option value="cafe">カフェ・飲食店</option>
+        <option value="seikotsu">整骨院・接骨院</option>
+        <option value="fitness">ジム・フィットネス</option>
+        <option value="shop">セレクトショップ</option>
+        <option value="other">その他</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>店舗名（任意）</label>
+      <input type="text" id="storeName" placeholder="〇〇サロン">
+    </div>
+    <div class="field">
+      <label>コンテンツタイプ</label>
+      <div class="chips" id="typeChips">
+        <div class="chip on" data-val="reel" onclick="toggleChip(this,'type')">リール</div>
+        <div class="chip" data-val="feed" onclick="toggleChip(this,'type')">フィード</div>
+        <div class="chip" data-val="story" onclick="toggleChip(this,'type')">ストーリーズ</div>
+        <div class="chip" data-val="carousel" onclick="toggleChip(this,'type')">カルーセル</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- テーマ -->
+  <div>
+    <div class="sb-section">テーマ・詳細</div>
+    <div class="field">
+      <label>テーマ</label>
+      <div class="chips" id="themeChips">
+        <div class="chip on" data-val="menu" onclick="toggleChip(this,'theme')">メニュー紹介</div>
+        <div class="chip" data-val="staff" onclick="toggleChip(this,'theme')">スタッフ紹介</div>
+        <div class="chip" data-val="before_after" onclick="toggleChip(this,'theme')">B/A</div>
+        <div class="chip" data-val="campaign" onclick="toggleChip(this,'theme')">キャンペーン</div>
+        <div class="chip" data-val="how_to" onclick="toggleChip(this,'theme')">ハウツー</div>
+        <div class="chip" data-val="daily" onclick="toggleChip(this,'theme')">日常</div>
+        <div class="chip" data-val="review" onclick="toggleChip(this,'theme')">お客様の声</div>
+        <div class="chip" data-val="season" onclick="toggleChip(this,'theme')">季節企画</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>追加情報・メモ（任意）</label>
+      <textarea id="extraInfo" placeholder="例：春の新メニュー、カラー料金¥8,800、予約はDMで受付"></textarea>
+    </div>
+    <div class="field">
+      <label>トーン</label>
+      <div class="chips" id="toneChips">
+        <div class="chip on" data-val="friendly" onclick="toggleChip(this,'tone')">親しみやすい</div>
+        <div class="chip" data-val="premium" onclick="toggleChip(this,'tone')">上品・高級感</div>
+        <div class="chip" data-val="pop" onclick="toggleChip(this,'tone')">ポップ・元気</div>
+        <div class="chip" data-val="natural" onclick="toggleChip(this,'tone')">ナチュラル</div>
+        <div class="chip" data-val="cool" onclick="toggleChip(this,'tone')">クール</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" id="genBtn" onclick="generate()">✨ コンテンツを生成</button>
+  <button class="btn btn-ghost" onclick="generateIdeas()">💡 投稿アイデアを出す</button>
+</div>
+
+<!-- ===== MAIN ===== -->
+<div class="main">
+  <div class="main-top">
+    <div class="main-title">生成結果</div>
+    <button class="btn btn-ghost btn-sm" onclick="copyAll()">📋 全てコピー</button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab on" onclick="switchTab('script')">🎬 リール台本</div>
+    <div class="tab" onclick="switchTab('caption')">📝 キャプション</div>
+    <div class="tab" onclick="switchTab('ideas')">💡 アイデア</div>
+    <div class="tab" onclick="switchTab('brand')">🎨 ブランディング</div>
+  </div>
+
+  <!-- Generating -->
+  <div class="generating" id="generating">
+    <div class="gen-icon">✨</div>
+    <div class="gen-text" id="genText">AIが生成しています...</div>
+    <div class="gen-sub">少々お待ちください</div>
+  </div>
+
+  <!-- Script Tab -->
+  <div class="out-section on" id="sec-script">
+    <div class="empty" id="scriptEmpty">
+      <div class="empty-icon">🎬</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">リール台本</div>
+      <div style="font-size:12px;line-height:1.8">左側で設定して「コンテンツを生成」を押すと<br>リール動画の台本が自動で作られます</div>
+    </div>
+    <div id="scriptOutput" style="display:none">
+      <div class="out-card">
+        <div class="out-card-head">
+          <div class="out-card-title">🎬 リール台本 <span style="font-size:11px;color:var(--muted);font-weight:400" id="scriptDuration"></span></div>
+          <div class="out-card-actions">
+            <button class="btn btn-ghost btn-sm" onclick="copyScript()">📋 コピー</button>
+            <button class="btn btn-ghost btn-sm" onclick="generate()">🔄 再生成</button>
+          </div>
+        </div>
+        <div class="out-card-body" id="scriptContent"></div>
+      </div>
+      <div class="out-card">
+        <div class="out-card-head">
+          <div class="out-card-title">🎙 ナレーション原稿</div>
+          <div class="out-card-actions">
+            <button class="btn btn-ghost btn-sm" onclick="copyNarration()">📋 コピー</button>
+          </div>
+        </div>
+        <div class="out-card-body">
+          <div class="script-text" id="narrationContent"></div>
+        </div>
+      </div>
+      <div class="out-card">
+        <div class="out-card-head">
+          <div class="out-card-title">📌 撮影チェックリスト</div>
+        </div>
+        <div class="out-card-body" id="checklistContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Caption Tab -->
+  <div class="out-section" id="sec-caption">
+    <div class="empty" id="captionEmpty">
+      <div class="empty-icon">📝</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">キャプション・ハッシュタグ</div>
+      <div style="font-size:12px;line-height:1.8">生成するとキャプション・ハッシュタグが<br>セットで作られます</div>
+    </div>
+    <div id="captionOutput" style="display:none">
+      <div class="out-card">
+        <div class="out-card-head">
+          <div class="out-card-title">📝 キャプション</div>
+          <div class="out-card-actions">
+            <button class="btn btn-ghost btn-sm" onclick="copyCaption()">📋 コピー</button>
+            <button class="btn btn-ghost btn-sm" onclick="regenCaption()">🔄 再生成</button>
+          </div>
+        </div>
+        <div class="out-card-body">
+          <div class="caption-text" id="captionText"></div>
+        </div>
+      </div>
+      <div class="out-card">
+        <div class="out-card-head">
+          <div class="out-card-title">#️⃣ ハッシュタグ <span id="tagCount" style="font-size:11px;color:var(--muted);font-weight:400"></span></div>
+          <div class="out-card-actions">
+            <button class="btn btn-ghost btn-sm" onclick="copyTags()">📋 コピー</button>
+          </div>
+        </div>
+        <div class="out-card-body">
+          <div class="hashtag-wrap" id="hashtagWrap"></div>
+        </div>
+      </div>
+      <div class="out-card">
+        <div class="out-card-head">
+          <div class="out-card-title">📋 投稿用（キャプション＋タグ）</div>
+          <div class="out-card-actions">
+            <button class="btn btn-primary btn-sm" onclick="copyFull()">📋 全てコピー</button>
+          </div>
+        </div>
+        <div class="out-card-body">
+          <div style="font-size:12px;color:var(--muted);line-height:1.7" id="fullPreview"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ideas Tab -->
+  <div class="out-section" id="sec-ideas">
+    <div class="empty" id="ideasEmpty">
+      <div class="empty-icon">💡</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">投稿アイデア</div>
+      <div style="font-size:12px;line-height:1.8">「投稿アイデアを出す」ボタンを押すと<br>今月の投稿計画が自動で作られます</div>
+    </div>
+    <div id="ideasOutput" style="display:none">
+      <div class="out-card">
+        <div class="out-card-head">
+          <div class="out-card-title">💡 今月の投稿アイデア16選</div>
+          <div class="out-card-actions">
+            <button class="btn btn-ghost btn-sm" onclick="generateIdeas()">🔄 再生成</button>
+          </div>
+        </div>
+        <div class="out-card-body">
+          <div class="idea-grid" id="ideasGrid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== State =====
+var selections = { type:'reel', theme:'menu', tone:'friendly' };
+var generatedScript = '';
+var generatedCaption = '';
+var generatedTags = '';
+var generatedNarration = '';
+
+// ===== Init =====
+(function(){
+  try{
+    var k = localStorage.getItem('content_api_key')||'';
+    if(k){ document.getElementById('apiKey').value=k; updateKeyStatus(true); }
+  }catch(e){}
+})();
+
+// ===== API Key =====
+function saveKey(){
+  var k = document.getElementById('apiKey').value.trim();
+  if(!k){ toast('APIキーを入力してください'); return; }
+  try{ localStorage.setItem('content_api_key',k); }catch(e){}
+  updateKeyStatus(true);
+  toast('APIキーを保存しました');
+}
+function updateKeyStatus(ok){
+  var el = document.getElementById('keyStatus');
+  el.innerHTML = ok ? '<span class="key-status key-ok">✓ 設定済み</span>' : '<span class="key-status key-ng">未設定</span>';
+}
+function getKey(){
+  var k = document.getElementById('apiKey').value.trim();
+  if(!k) try{ k = localStorage.getItem('content_api_key')||''; }catch(e){}
+  return k;
+}
+
+// ===== Chips =====
+function toggleChip(el, group){
+  document.querySelectorAll('#'+group+'Chips .chip').forEach(function(c){ c.classList.remove('on'); });
+  el.classList.add('on');
+  selections[group] = el.dataset.val;
+}
+
+// ===== Tab =====
+function switchTab(id){
+  document.querySelectorAll('.tab').forEach(function(el,i){ el.classList.toggle('on',['script','caption','ideas'][i]===id); });
+  document.querySelectorAll('.out-section').forEach(function(el){ el.classList.remove('on'); });
+  document.getElementById('sec-'+id).classList.add('on');
+}
+
+// ===== Claude API =====
+async function callClaude(prompt, maxTokens){
+  var key = getKey();
+  if(!key) throw new Error('APIキーが設定されていません');
+  var res = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'x-api-key':key,
+      'anthropic-version':'2023-06-01',
+      'content-type':'application/json',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body:JSON.stringify({
+      model:'claude-sonnet-4-6',
+      max_tokens:maxTokens||1500,
+      messages:[{role:'user',content:prompt}]
+    })
+  });
+  if(!res.ok){
+    var e=await res.json().catch(function(){return{};});
+    throw new Error((e.error&&e.error.message)||'APIエラー'+res.status);
+  }
+  var d=await res.json();
+  return d.content[0].text;
+}
+
+// ===== Generate All =====
+async function generate(){
+  var key=getKey();
+  if(!key){ toast('左側でAPIキーを設定してください'); return; }
+
+  var genre=document.getElementById('genre').value;
+  var genreLabel={'salon':'美容室・ヘアサロン','nail':'ネイルサロン','esthe':'エステ・脱毛サロン','cafe':'カフェ・飲食店','seikotsu':'整骨院・接骨院','fitness':'ジム・フィットネス','shop':'セレクトショップ','other':'店舗'}[genre]||genre;
+  var store=document.getElementById('storeName').value||genreLabel;
+  var theme={'menu':'メニュー紹介','staff':'スタッフ紹介','before_after':'ビフォーアフター','campaign':'キャンペーン告知','how_to':'ハウツー・お役立ち','daily':'日常の様子','review':'お客様の声','season':'季節企画'}[selections.theme]||selections.theme;
+  var tone={'friendly':'親しみやすくカジュアル','premium':'上品で落ち着いた','pop':'明るくポップ','natural':'ナチュラルで温かみのある','cool':'スタイリッシュでクール'}[selections.tone]||'';
+  var extra=document.getElementById('extraInfo').value;
+  var ctype={'reel':'リール動画（縦型・30秒以内）','feed':'フィード投稿（静止画）','story':'ストーリーズ','carousel':'カルーセル投稿（複数枚）'}[selections.type]||'投稿';
+
+  showGenerating('台本・キャプションを生成中...');
+
+  try{
+    // 台本とキャプションを同時生成（1回のAPIコールで）
+    var prompt = 'あなたはInstagramマーケティングの専門家です。以下の条件で、リール台本・ナレーション・キャプション・ハッシュタグをすべて生成してください。\n\n' +
+      '店舗: '+store+' （'+genreLabel+'）\n'+
+      'コンテンツタイプ: '+ctype+'\n'+
+      'テーマ: '+theme+'\n'+
+      'トーン: '+tone+'\n'+
+      (extra?'追加情報: '+extra+'\n':'')+
+      '\n以下のJSON形式で出力してください（他のテキストは不要）:\n'+
+      '{\n'+
+      '  "script": [\n'+
+      '    {"scene": 1, "time": "0-3秒", "label": "フック", "visual": "撮影するもの・アングルの説明", "text": "テキストオーバーレイの文字", "narration": "ナレーション文"},\n'+
+      '    {"scene": 2, "time": "3-8秒", "label": "本編①", "visual": "...", "text": "...", "narration": "..."}\n'+
+      '    ... （合計6〜8シーン）\n'+
+      '  ],\n'+
+      '  "checklist": ["撮影前に確認すること①", "②", "③", "④", "⑤"],\n'+
+      '  "caption": "キャプション本文（200〜300文字、絵文字あり、最後に行動喚起）",\n'+
+      '  "hashtags": ["#タグ1", "#タグ2", ...（15〜25個）]\n'+
+      '}';
+
+    var result = await callClaude(prompt, 2500);
+
+    // JSON抽出
+    var jsonMatch = result.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) throw new Error('AI応答のJSON形式が正しくありません。再生成してください。');
+    var data;
+    try {
+      data = JSON.parse(jsonMatch[0]);
+    } catch(parseErr) {
+      throw new Error('JSONパース失敗。再生成してください。');
+    }
+    if(!data.script && !data.caption) throw new Error('生成データが不完全です。再生成してください。');
+
+    // 保存
+    generatedScript = data.script || [];
+    generatedNarration = (data.script||[]).map(function(s){ return s.narration||''; }).join('\n');
+    generatedCaption = data.caption || '';
+    generatedTags = (data.hashtags||[]).join(' ');
+
+    hideGenerating();
+    renderScript(data.script||[], data.checklist||[]);
+    renderCaption(data.caption||'', data.hashtags||[]);
+    switchTab('script');
+    toast('生成完了！');
+
+  }catch(e){
+    hideGenerating();
+    toast('エラー: '+e.message);
+  }
+}
+
+// ===== Generate Ideas =====
+async function generateIdeas(){
+  var key=getKey();
+  if(!key){ toast('APIキーを設定してください'); return; }
+
+  var genre=document.getElementById('genre').value;
+  var genreLabel={'salon':'美容室・ヘアサロン','nail':'ネイルサロン','esthe':'エステ・脱毛サロン','cafe':'カフェ・飲食店','seikotsu':'整骨院・接骨院','fitness':'ジム・フィットネス','shop':'セレクトショップ','other':'店舗'}[genre]||genre;
+
+  showGenerating('投稿アイデアを生成中...');
+  switchTab('ideas');
+
+  try{
+    var now = new Date();
+    var month = now.getMonth()+1;
+    var prompt = ''+genreLabel+'のInstagram投稿アイデアを16個考えてください。\n'+
+      '現在の月: '+month+'月\n'+
+      '季節感・イベントを考慮してください。\n\n'+
+      '以下のJSON配列で出力してください（他のテキスト不要）:\n'+
+      '[{"icon":"絵文字1つ","title":"投稿タイトル","desc":"投稿内容の説明（1文）","type":"リール|フィード|カルーセル|ストーリーズ","theme":"テーマ分類"},...]';
+
+    var result = await callClaude(prompt, 2000);
+    var jsonMatch = result.match(/\[[\s\S]*\]/);
+    if(!jsonMatch) throw new Error('解析失敗');
+    var ideas = JSON.parse(jsonMatch[0]);
+
+    hideGenerating();
+    renderIdeas(ideas);
+
+  }catch(e){
+    hideGenerating();
+    toast('エラー: '+e.message);
+  }
+}
+
+// ===== Regenerate Caption only =====
+async function regenCaption(){
+  var key=getKey();
+  if(!key){ toast('APIキーを設定してください'); return; }
+  showGenerating('キャプションを再生成中...');
+  var genre=document.getElementById('genre').value;
+  var genreLabel={'salon':'美容室・ヘアサロン','nail':'ネイルサロン','esthe':'エステ・脱毛サロン','cafe':'カフェ・飲食店','seikotsu':'整骨院・接骨院','fitness':'ジム・フィットネス','shop':'セレクトショップ'}[genre]||genre;
+  var extra=document.getElementById('extraInfo').value;
+  var theme={'menu':'メニュー紹介','staff':'スタッフ紹介','before_after':'ビフォーアフター','campaign':'キャンペーン告知','how_to':'ハウツー','daily':'日常','review':'お客様の声','season':'季節企画'}[selections.theme]||'';
+  try{
+    var prompt = genreLabel+'の'+theme+'投稿のInstagramキャプションを作成。200〜300文字、絵文字使用、行動喚起含む。'+(extra?'情報: '+extra:'')+'\nキャプション本文のみ出力。';
+    var result = await callClaude(prompt, 600);
+    generatedCaption = result;
+    hideGenerating();
+    renderCaption(result, (generatedTags||'').split(' ').filter(Boolean));
+    switchTab('caption');
+  }catch(e){
+    hideGenerating();
+    toast('エラー: '+e.message);
+  }
+}
+
+// ===== Render =====
+function renderScript(scenes, checklist){
+  document.getElementById('scriptEmpty').style.display='none';
+  document.getElementById('scriptOutput').style.display='';
+  var total = scenes.length ? scenes[scenes.length-1].time : '';
+  document.getElementById('scriptDuration').textContent = scenes.length+'シーン';
+
+  var colors=['#7c3aed','#a855f7','#e1306c','#f59e0b','#16a34a','#0ea5e9','#f43f5e','#8b5cf6'];
+  document.getElementById('scriptContent').innerHTML = scenes.map(function(s,i){
+    var col = colors[i%colors.length];
+    return '<div class="script-block">'+
+      '<div class="script-block-label" style="color:'+col+'">'+
+      'SCENE '+s.scene+' <span class="script-block-time">'+s.time+'</span> '+
+      '<span style="background:'+col+'22;color:'+col+';padding:1px 7px;border-radius:10px;font-size:9px;margin-left:4px">'+s.label+'</span>'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px">'+
+      '<div style="background:#f5f0ff;border-radius:7px;padding:10px;font-size:12px;color:var(--text)">'+
+      '<div style="font-size:9px;color:'+col+';font-weight:700;margin-bottom:4px">📷 映像・撮影</div>'+
+      esc(s.visual)+'</div>'+
+      '<div style="background:#fafafa;border:1px solid var(--border);border-radius:7px;padding:10px;font-size:12px;color:var(--text)">'+
+      '<div style="font-size:9px;color:var(--muted);font-weight:700;margin-bottom:4px">💬 テキスト</div>'+
+      esc(s.text)+'</div>'+
+      '</div>'+
+      '</div>';
+  }).join('');
+
+  document.getElementById('narrationContent').textContent = scenes.map(function(s,i){
+    return 'SCENE '+s.scene+'（'+s.time+'）\n'+s.narration;
+  }).join('\n\n');
+
+  document.getElementById('checklistContent').innerHTML = checklist.map(function(item){
+    return '<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">'+
+      '<span style="color:var(--accent);flex-shrink:0">□</span><span>'+esc(item)+'</span></div>';
+  }).join('');
+}
+
+function renderCaption(caption, tags){
+  document.getElementById('captionEmpty').style.display='none';
+  document.getElementById('captionOutput').style.display='';
+  document.getElementById('captionText').textContent = caption;
+  document.getElementById('tagCount').textContent = tags.length+'個';
+  document.getElementById('hashtagWrap').innerHTML = tags.map(function(t){
+    return '<span class="htag" onclick="toast(\''+esc(t)+' コピー\')">'+esc(t)+'</span>';
+  }).join('');
+  var full = caption+'\n\n.\n.\n.\n'+tags.join(' ');
+  document.getElementById('fullPreview').innerHTML = full.replace(/\n/g,'<br>');
+  generatedTags = tags.join(' ');
+}
+
+function renderIdeas(ideas){
+  document.getElementById('ideasEmpty').style.display='none';
+  document.getElementById('ideasOutput').style.display='';
+  document.getElementById('ideasGrid').innerHTML = ideas.slice(0,16).map(function(idea){
+    return '<div class="idea-card" onclick="applyIdea(\''+esc(idea.theme)+'\')">'+
+      '<div class="idea-card-icon">'+idea.icon+'</div>'+
+      '<div class="idea-card-title">'+esc(idea.title)+'</div>'+
+      '<div class="idea-card-desc">'+esc(idea.desc)+'</div>'+
+      '<span class="idea-card-type">'+esc(idea.type)+'</span>'+
+      '</div>';
+  }).join('');
+}
+
+function applyIdea(theme){
+  document.getElementById('extraInfo').value = theme;
+  switchTab('script');
+  toast('テーマを設定しました。「生成」を押してください');
+}
+
+// ===== Copy =====
+function copyScript(){
+  var scenes = generatedScript;
+  if(!scenes||!scenes.length){ toast('まず生成してください'); return; }
+  var text = scenes.map(function(s){
+    return 'SCENE '+s.scene+'（'+s.time+'）【'+s.label+'】\n映像: '+s.visual+'\nテキスト: '+s.text+'\nナレーション: '+s.narration;
+  }).join('\n\n');
+  copy(text);
+}
+function copyNarration(){ copy(generatedNarration||'まず生成してください'); }
+function copyCaption(){ copy(generatedCaption||'まず生成してください'); }
+function copyTags(){ copy(generatedTags||'まず生成してください'); }
+function copyFull(){
+  copy((generatedCaption||'')+'\n\n.\n.\n.\n'+(generatedTags||''));
+}
+function copyAll(){
+  var text='【リール台本】\n'+(generatedScript.map(function(s){return 'S'+s.scene+'('+s.time+') '+s.label+'\n映像:'+s.visual+'\nテキスト:'+s.text+'\nナレ:'+s.narration;}).join('\n\n'))+
+    '\n\n【キャプション】\n'+generatedCaption+'\n\n'+generatedTags;
+  copy(text);
+}
+function copy(text){
+  navigator.clipboard.writeText(text).then(function(){ toast('コピーしました！'); }).catch(function(){ toast('コピー失敗'); });
+}
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ===== Loading =====
+function showGenerating(msg){
+  document.getElementById('generating').style.display='';
+  document.getElementById('genText').textContent=msg||'生成中...';
+  document.querySelectorAll('.out-section').forEach(function(el){ el.classList.remove('on'); });
+  document.getElementById('generating').style.display='';
+}
+function hideGenerating(){
+  document.getElementById('generating').style.display='none';
+}
+
+// ===== Toast =====
+function toast(msg,dur){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show';
+  setTimeout(function(){t.className='toast';},dur||2000);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Instagram 分析レポートツール</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f13;
+  --surface:#18181f;
+  --surface2:#22222c;
+  --border:#2e2e3a;
+  --accent:#e1306c;
+  --accent2:#f77737;
+  --purple:#833ab4;
+  --text:#f0f0f5;
+  --muted:#7a7a90;
+  --green:#2ecc71;
+  --card-bg:#1c1c25;
+}
+body{background:var(--bg);color:var(--text);font-family:'Hiragino Sans','Meiryo',sans-serif;min-height:100vh}
+
+/* layout */
+.app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:24px 16px;display:flex;flex-direction:column;gap:20px}
+.main{padding:28px;overflow-y:auto}
+
+/* sidebar */
+.logo{font-size:15px;font-weight:700;letter-spacing:.04em;display:flex;align-items:center;gap:8px}
+.logo span{background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.section-label{font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.input-group{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.input-group label{font-size:11px;color:var(--muted)}
+input[type=text],input[type=password],input[type=month],select,textarea{
+  background:var(--surface2);border:1px solid var(--border);border-radius:7px;
+  color:var(--text);padding:8px 10px;font-size:12px;width:100%;outline:none;font-family:inherit
+}
+input:focus,select:focus{border-color:var(--accent)}
+.btn{padding:10px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;width:100%;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--purple));color:#fff}
+.btn-primary:hover{opacity:.85}
+.btn-ghost{background:var(--surface2);border:1px solid var(--border);color:var(--muted)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm{padding:6px 12px;font-size:11px;border-radius:6px;width:auto}
+.help-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:11px;color:var(--muted);line-height:1.7}
+.help-box a{color:var(--accent);text-decoration:none}
+.status{font-size:11px;padding:6px 10px;border-radius:6px;text-align:center}
+.status.ok{background:rgba(46,204,113,.15);color:var(--green);border:1px solid rgba(46,204,113,.3)}
+.status.err{background:rgba(225,48,108,.1);color:var(--accent);border:1px solid rgba(225,48,108,.2)}
+
+/* main */
+.page-title{font-size:20px;font-weight:700;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:24px}
+.report-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.export-btns{display:flex;gap:8px}
+
+/* stats grid */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.stat-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px}
+.stat-label{font-size:11px;color:var(--muted);margin-bottom:6px}
+.stat-value{font-size:24px;font-weight:700;letter-spacing:-.02em}
+.stat-change{font-size:11px;margin-top:4px}
+.stat-change.up{color:var(--green)}
+.stat-change.down{color:var(--accent)}
+.stat-icon{font-size:22px;margin-bottom:8px}
+
+/* chart area */
+.chart-section{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
+.chart-title{font-size:13px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:6px}
+.chart-wrap{position:relative;height:180px}
+canvas.chart{width:100%;height:100%}
+
+/* posts table */
+.posts-section{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
+.posts-table{width:100%;border-collapse:collapse;font-size:12px}
+.posts-table th{color:var(--muted);font-weight:500;padding:8px 10px;border-bottom:1px solid var(--border);text-align:left}
+.posts-table td{padding:10px 10px;border-bottom:1px solid rgba(46,46,58,.5);vertical-align:middle}
+.posts-table tr:hover td{background:rgba(255,255,255,.02)}
+.post-thumb{width:44px;height:44px;border-radius:6px;object-fit:cover;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:18px}
+.post-thumb img{width:44px;height:44px;border-radius:6px;object-fit:cover}
+.rank-badge{width:22px;height:22px;border-radius:50%;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.rank-1{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff}
+.rank-2{background:#9ca3af;color:#fff}
+.rank-3{background:#92400e;color:#fff}
+.rank-n{background:var(--surface2);color:var(--muted)}
+
+/* engagement bar */
+.eng-bar{height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;width:80px}
+.eng-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--purple));border-radius:2px}
+
+/* insight boxes */
+.insights-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
+.insight-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px}
+.insight-title{font-size:12px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.insight-item{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px}
+.insight-item:last-child{border-bottom:none}
+
+/* empty / loading */
+.empty-state{text-align:center;padding:80px 20px;color:var(--muted)}
+.empty-state .icon{font-size:48px;margin-bottom:16px}
+.loading{display:flex;align-items:center;justify-content:center;gap:10px;padding:40px;color:var(--muted);font-size:13px}
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ai comment */
+.ai-comment{background:linear-gradient(135deg,rgba(131,58,180,.15),rgba(225,48,108,.1));border:1px solid rgba(131,58,180,.3);border-radius:12px;padding:16px;margin-bottom:20px;font-size:13px;line-height:1.8}
+.ai-comment .ai-label{font-size:11px;font-weight:700;color:var(--purple);margin-bottom:8px;display:flex;align-items:center;gap:5px}
+
+/* report cover (print) */
+@media print{
+  .sidebar,.export-btns,.btn-primary,.help-box{display:none!important}
+  .app{grid-template-columns:1fr}
+  .main{padding:0}
+  body{background:#fff;color:#000}
+  .stat-card,.chart-section,.posts-section,.insight-card,.ai-comment{border:1px solid #e0e0e0;background:#fff}
+  .stat-value,.chart-title,.page-title{color:#000}
+  .stat-label,.page-sub,.insight-title,.posts-table th{color:#555}
+  .posts-table td{color:#222}
+}
+
+/* token setup guide */
+.guide-step{display:flex;gap:10px;margin-bottom:14px;align-items:flex-start}
+.guide-num{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.guide-text{font-size:11px;color:var(--muted);line-height:1.7}
+.guide-text code{background:var(--surface);padding:1px 5px;border-radius:3px;font-family:monospace;font-size:10px;color:var(--text)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ===== SIDEBAR ===== -->
+<div class="sidebar">
+  <div class="logo">📊 <span>Insta Report</span></div>
+
+  <!-- アクセストークン設定 -->
+  <div>
+    <div class="section-label">アクセストークン設定</div>
+    <div class="input-group">
+      <label>Instagram アクセストークン</label>
+      <input type="password" id="tokenInput" placeholder="IGQVJ...">
+    </div>
+    <div class="input-group">
+      <label>Instagram ビジネスアカウントID</label>
+      <input type="text" id="igIdInput" placeholder="17841xxxxxxxxxx">
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:10px">
+      <button class="btn btn-primary" onclick="saveToken()" style="flex:1">保存</button>
+      <button class="btn btn-ghost btn-sm" onclick="toggleGuide()" style="flex:1">取得方法</button>
+    </div>
+    <div id="tokenStatus"></div>
+  </div>
+
+  <!-- 取得方法ガイド -->
+  <div id="tokenGuide" style="display:none">
+    <div class="section-label">トークン取得手順</div>
+    <div class="guide-step">
+      <div class="guide-num">1</div>
+      <div class="guide-text"><a href="https://developers.facebook.com/" target="_blank" style="color:var(--accent)">Meta for Developers</a> にログイン → 「マイアプリ」→「アプリを作成」</div>
+    </div>
+    <div class="guide-step">
+      <div class="guide-num">2</div>
+      <div class="guide-text">「ビジネス」タイプを選択 → アプリ名を入力して作成</div>
+    </div>
+    <div class="guide-step">
+      <div class="guide-num">3</div>
+      <div class="guide-text">「Instagram Graph API」を追加 → Instagram Business Accountと連携</div>
+    </div>
+    <div class="guide-step">
+      <div class="guide-num">4</div>
+      <div class="guide-text"><a href="https://developers.facebook.com/tools/explorer/" target="_blank" style="color:var(--accent)">Graph API Explorer</a> で<br>権限: <code>instagram_basic</code> <code>instagram_manage_insights</code> を選択してトークン生成</div>
+    </div>
+    <div class="guide-step">
+      <div class="guide-num">5</div>
+      <div class="guide-text">生成されたトークンをコピーして上の欄に貼り付け<br>アカウントIDは <code>me?fields=instagram_business_account</code> で確認</div>
+    </div>
+    <div class="help-box">💡 長期トークンは60日有効。期限前にツールが通知します。</div>
+  </div>
+
+  <!-- レポート設定 -->
+  <div>
+    <div class="section-label">レポート設定</div>
+    <div class="input-group">
+      <label>クライアント名</label>
+      <input type="text" id="clientName" placeholder="〇〇サロン">
+    </div>
+    <div class="input-group">
+      <label>対象期間</label>
+      <input type="month" id="reportMonth">
+    </div>
+    <div class="input-group">
+      <label>取得投稿数（最大50）</label>
+      <select id="postLimit">
+        <option value="12">12件（直近1ヶ月相当）</option>
+        <option value="25" selected>25件</option>
+        <option value="50">50件（最大）</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="fetchReport()" id="fetchBtn">
+      📊 レポートを生成
+    </button>
+  </div>
+
+  <!-- AI コメント設定 -->
+  <div>
+    <div class="section-label">AI 自動コメント</div>
+    <div class="input-group">
+      <label>Claude APIキー</label>
+      <input type="password" id="claudeKey" placeholder="sk-ant-api03-...">
+      <button class="btn btn-ghost btn-sm" onclick="saveClaudeKey()" style="margin-top:4px">保存</button>
+    </div>
+    <div class="help-box">AIが分析結果を読んでクライアントへのコメントを自動生成します</div>
+  </div>
+</div>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="main" id="mainContent">
+  <div class="empty-state" id="emptyState">
+    <div class="icon">📈</div>
+    <div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px">Instagram 分析レポート</div>
+    <div style="font-size:13px;line-height:1.8">
+      左サイドバーでアクセストークンを設定し<br>
+      「レポートを生成」を押してください
+    </div>
+    <div style="margin-top:24px;font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;max-width:400px;margin-left:auto;margin-right:auto;text-align:left;line-height:1.9">
+      <strong style="color:var(--text)">このツールでわかること</strong><br>
+      フォロワー数・リーチ・インプレッション<br>
+      投稿ごとのエンゲージメント率<br>
+      バズった投稿TOP5ランキング<br>
+      最適な投稿時間・曜日分析<br>
+      AIによる改善提案コメント
+    </div>
+  </div>
+  <div id="reportContent" style="display:none"></div>
+  <div id="loadingState" style="display:none" class="loading">
+    <div class="spinner"></div>
+    <span id="loadingMsg">データを取得しています...</span>
+  </div>
+</div>
+</div>
+
+<script>
+// ===== State =====
+var igToken = '';
+var igId = '';
+var claudeKey = '';
+var reportData = null;
+
+// ===== Init =====
+(function(){
+  try {
+    igToken = localStorage.getItem('ig_token') || '';
+    igId    = localStorage.getItem('ig_id') || '';
+    claudeKey = localStorage.getItem('claude_key') || '';
+    if(igToken) document.getElementById('tokenInput').value = igToken;
+    if(igId)    document.getElementById('igIdInput').value = igId;
+    if(claudeKey) document.getElementById('claudeKey').value = claudeKey;
+    if(igToken && igId) showStatus('設定済み', true);
+  } catch(e) {}
+  // 今月をデフォルト
+  var now = new Date();
+  document.getElementById('reportMonth').value =
+    now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+})();
+
+// ===== Token / Key =====
+function saveToken(){
+  igToken = document.getElementById('tokenInput').value.trim();
+  igId    = document.getElementById('igIdInput').value.trim();
+  if(!igToken || !igId){ showStatus('トークンとIDを両方入力してください', false); return; }
+  try{ localStorage.setItem('ig_token', igToken); localStorage.setItem('ig_id', igId); }catch(e){}
+  showStatus('保存しました', true);
+}
+function saveClaudeKey(){
+  claudeKey = document.getElementById('claudeKey').value.trim();
+  try{ localStorage.setItem('claude_key', claudeKey); }catch(e){}
+  alert('Claude APIキーを保存しました');
+}
+function showStatus(msg, ok){
+  var el = document.getElementById('tokenStatus');
+  el.className = 'status ' + (ok ? 'ok' : 'err');
+  el.textContent = ok ? '✓ ' + msg : '✗ ' + msg;
+}
+function toggleGuide(){
+  var g = document.getElementById('tokenGuide');
+  g.style.display = g.style.display === 'none' ? '' : 'none';
+}
+
+// ===== API Fetch =====
+async function igFetch(path){
+  var url = 'https://graph.instagram.com/' + path +
+    (path.includes('?') ? '&' : '?') + 'access_token=' + igToken;
+  var res = await fetch(url);
+  if(!res.ok){
+    var err = await res.json().catch(function(){ return {}; });
+    throw new Error((err.error && err.error.message) || 'API Error ' + res.status);
+  }
+  return res.json();
+}
+
+async function fetchReport(){
+  if(!igToken || !igId){
+    alert('アクセストークンとアカウントIDを設定してください');
+    return;
+  }
+  setLoading(true, 'アカウント情報を取得しています...');
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('reportContent').style.display = 'none';
+
+  try {
+    // 1. アカウント基本情報
+    setLoading(true, 'プロフィール情報を取得中...');
+    var profile = await igFetch(igId + '?fields=username,followers_count,follows_count,media_count,profile_picture_url,biography');
+
+    // 2. インサイト（アカウント全体）
+    setLoading(true, 'インサイトデータを取得中...');
+    var limit = document.getElementById('postLimit').value;
+    var since = getSince();
+    var until = getUntil();
+
+    var accountInsights = null;
+    try {
+      accountInsights = await igFetch(igId + '/insights?metric=reach,impressions,profile_views,website_clicks&period=day&since=' + since + '&until=' + until);
+    } catch(e) {
+      console.log('Account insights error (may need more permissions):', e.message);
+    }
+
+    // 3. 投稿一覧
+    setLoading(true, '投稿データを取得中...');
+    var media = await igFetch(igId + '/media?fields=id,caption,media_type,media_url,thumbnail_url,timestamp,like_count,comments_count&limit=' + limit);
+
+    // 4. 各投稿のインサイト
+    setLoading(true, '投稿インサイトを取得中...');
+    var postsWithInsights = [];
+    for(var i = 0; i < Math.min(media.data.length, parseInt(limit)); i++){
+      var post = media.data[i];
+      try {
+        var ins = await igFetch(post.id + '/insights?metric=reach,impressions,saved,engagement');
+        post.insights = {};
+        ins.data.forEach(function(m){ post.insights[m.name] = m.values[0].value; });
+      } catch(e) {
+        post.insights = { reach: 0, impressions: 0, saved: 0, engagement: 0 };
+      }
+      postsWithInsights.push(post);
+    }
+
+    reportData = {
+      profile: profile,
+      accountInsights: accountInsights,
+      posts: postsWithInsights,
+      month: document.getElementById('reportMonth').value,
+      clientName: document.getElementById('clientName').value || profile.username
+    };
+
+    // 5. AIコメント生成（オプション）
+    var aiComment = '';
+    if(claudeKey){
+      setLoading(true, 'AIがレポートを分析中...');
+      aiComment = await generateAIComment(reportData);
+    }
+    reportData.aiComment = aiComment;
+
+    setLoading(false);
+    renderReport(reportData);
+
+  } catch(e) {
+    setLoading(false);
+    document.getElementById('emptyState').style.display = '';
+    alert('エラーが発生しました:\n' + e.message + '\n\nアクセストークンとIDを確認してください。');
+  }
+}
+
+function getSince(){
+  var m = document.getElementById('reportMonth').value;
+  return m + '-01';
+}
+function getUntil(){
+  var m = document.getElementById('reportMonth').value;
+  var d = new Date(m + '-01');
+  d.setMonth(d.getMonth()+1);
+  d.setDate(0);
+  return m + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function setLoading(on, msg){
+  document.getElementById('loadingState').style.display = on ? '' : 'none';
+  if(msg) document.getElementById('loadingMsg').textContent = msg;
+}
+
+// ===== AI Comment =====
+async function generateAIComment(data){
+  var topPost = data.posts.slice().sort(function(a,b){ return (b.insights.reach||0)-(a.insights.reach||0); })[0];
+  var avgEng = calcAvgEngagement(data.posts);
+  var prompt = 'あなたはInstagramマーケティングの専門家です。以下の分析データを元に、クライアント（' + data.clientName + '）への月次レポートコメントを書いてください。\n\n' +
+    'フォロワー数: ' + data.profile.followers_count + '\n' +
+    '投稿数: ' + data.posts.length + '件\n' +
+    '平均エンゲージメント率: ' + avgEng.toFixed(2) + '%\n' +
+    '最もリーチした投稿: ' + (topPost ? topPost.insights.reach + 'リーチ' : '不明') + '\n\n' +
+    '条件:\n- 200字程度\n- 前向きで具体的な改善提案を含める\n- 数字を使って成果を示す\n- 来月に向けたアドバイスを1つ入れる\n\nコメントのみ出力してください。';
+
+  try {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': claudeKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 600,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    var d = await res.json();
+    return d.content[0].text;
+  } catch(e) {
+    return '';
+  }
+}
+
+// ===== Render Report =====
+function calcAvgEngagement(posts){
+  if(!posts.length) return 0;
+  var total = posts.reduce(function(s,p){ return s + (p.like_count||0) + (p.comments_count||0); }, 0);
+  return total / posts.length;
+}
+
+function fmt(n){ return n ? n.toLocaleString() : '0'; }
+function fmtDate(ts){ return ts ? new Date(ts).toLocaleDateString('ja-JP',{month:'short',day:'numeric'}) : ''; }
+
+function renderReport(data){
+  var posts = data.posts;
+  var profile = data.profile;
+  var month = data.month;
+  var clientName = data.clientName;
+
+  // ランク別
+  var byReach = posts.slice().sort(function(a,b){ return (b.insights.reach||0)-(a.insights.reach||0); });
+  var bySaved = posts.slice().sort(function(a,b){ return (b.insights.saved||0)-(a.insights.saved||0); });
+  var byEng   = posts.slice().sort(function(a,b){
+    var ae = (a.like_count||0)+(a.comments_count||0);
+    var be = (b.like_count||0)+(b.comments_count||0);
+    return be-ae;
+  });
+
+  var totalReach = posts.reduce(function(s,p){ return s+(p.insights.reach||0); },0);
+  var totalImpr  = posts.reduce(function(s,p){ return s+(p.insights.impressions||0); },0);
+  var totalSaved = posts.reduce(function(s,p){ return s+(p.insights.saved||0); },0);
+  var totalLikes = posts.reduce(function(s,p){ return s+(p.like_count||0); },0);
+  var totalCmts  = posts.reduce(function(s,p){ return s+(p.comments_count||0); },0);
+  var avgEng     = calcAvgEngagement(posts);
+  var maxReach   = byReach[0] ? (byReach[0].insights.reach||1) : 1;
+
+  // 曜日別集計
+  var dayData = [0,0,0,0,0,0,0];
+  var dayCount = [0,0,0,0,0,0,0];
+  posts.forEach(function(p){
+    var d = new Date(p.timestamp).getDay();
+    dayData[d] += (p.like_count||0)+(p.comments_count||0);
+    dayCount[d]++;
+  });
+  var dayAvg = dayData.map(function(v,i){ return dayCount[i] ? (v/dayCount[i]).toFixed(1) : 0; });
+
+  // 時間帯別
+  var hourData = {};
+  posts.forEach(function(p){
+    var h = new Date(p.timestamp).getHours();
+    var slot = h < 6 ? '深夜' : h < 12 ? '午前' : h < 18 ? '午後' : '夜';
+    hourData[slot] = (hourData[slot]||0) + 1;
+  });
+
+  var rankBadge = function(i){
+    var cls = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-n';
+    return '<div class="rank-badge '+cls+'">'+(i+1)+'</div>';
+  };
+
+  var thumbEl = function(p){
+    if(p.thumbnail_url || p.media_url){
+      return '<img src="'+(p.thumbnail_url||p.media_url)+'" onerror="this.parentNode.innerHTML=\'📷\'">';
+    }
+    return '📷';
+  };
+
+  var html = '';
+
+  // ヘッダー
+  html += '<div class="report-header">';
+  html += '<div>';
+  html += '<div class="page-title">'+clientName+' 月次レポート</div>';
+  html += '<div class="page-sub">'+month.replace('-','年')+'月　@'+profile.username+'　フォロワー '+fmt(profile.followers_count)+'人</div>';
+  html += '</div>';
+  html += '<div class="export-btns">';
+  html += '<button class="btn btn-ghost btn-sm" onclick="window.print()" style="width:auto">🖨 PDF保存</button>';
+  html += '<button class="btn btn-ghost btn-sm" onclick="copyReport()" style="width:auto">📋 テキストコピー</button>';
+  html += '</div></div>';
+
+  // AIコメント
+  if(data.aiComment){
+    html += '<div class="ai-comment">';
+    html += '<div class="ai-label">✨ AI 総評</div>';
+    html += '<div>'+data.aiComment.replace(/\n/g,'<br>')+'</div>';
+    html += '</div>';
+  }
+
+  // KPIカード
+  html += '<div class="stats-grid">';
+  var stats = [
+    {icon:'👥',label:'フォロワー',value:fmt(profile.followers_count),change:''},
+    {icon:'📡',label:'合計リーチ',value:fmt(totalReach),change:''},
+    {icon:'❤️',label:'合計いいね',value:fmt(totalLikes),change:''},
+    {icon:'🔖',label:'合計保存',value:fmt(totalSaved),change:''},
+  ];
+  stats.forEach(function(s){
+    html += '<div class="stat-card">';
+    html += '<div class="stat-icon">'+s.icon+'</div>';
+    html += '<div class="stat-label">'+s.label+'</div>';
+    html += '<div class="stat-value">'+s.value+'</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // 2カラム insights
+  html += '<div class="insights-grid">';
+
+  // 曜日別エンゲージメント
+  html += '<div class="insight-card">';
+  html += '<div class="insight-title">📅 曜日別 平均エンゲージメント</div>';
+  var days = ['日','月','火','水','木','金','土'];
+  var maxDay = Math.max.apply(null,dayAvg.map(Number))||1;
+  days.forEach(function(d,i){
+    var v = parseFloat(dayAvg[i])||0;
+    html += '<div class="insight-item"><span>'+d+'曜日</span>';
+    html += '<div style="display:flex;align-items:center;gap:8px">';
+    html += '<div class="eng-bar" style="width:60px"><div class="eng-fill" style="width:'+((v/maxDay)*100)+'%"></div></div>';
+    html += '<span style="font-size:11px;color:var(--muted);min-width:30px;text-align:right">'+v+'</span>';
+    html += '</div></div>';
+  });
+  html += '</div>';
+
+  // 時間帯別
+  html += '<div class="insight-card">';
+  html += '<div class="insight-title">🕐 投稿時間帯分布</div>';
+  var slots = ['深夜','午前','午後','夜'];
+  var maxSlot = Math.max.apply(null,slots.map(function(s){ return hourData[s]||0; }))||1;
+  slots.forEach(function(s){
+    var v = hourData[s]||0;
+    html += '<div class="insight-item"><span>'+s+'</span>';
+    html += '<div style="display:flex;align-items:center;gap:8px">';
+    html += '<div class="eng-bar" style="width:60px"><div class="eng-fill" style="width:'+((v/maxSlot)*100)+'%"></div></div>';
+    html += '<span style="font-size:11px;color:var(--muted);min-width:30px;text-align:right">'+v+'件</span>';
+    html += '</div></div>';
+  });
+  html += '<div style="margin-top:10px;font-size:11px;color:var(--muted)">投稿総数: '+posts.length+'件　平均エンゲージメント: '+avgEng.toFixed(1)+'</div>';
+  html += '</div>';
+  html += '</div>';
+
+  // バズり投稿 TOP5（リーチ順）
+  html += '<div class="posts-section">';
+  html += '<div class="chart-title">🏆 リーチTOP5 投稿</div>';
+  html += '<table class="posts-table">';
+  html += '<thead><tr><th>順位</th><th>サムネ</th><th>日付</th><th>キャプション</th><th>リーチ</th><th>いいね</th><th>保存</th><th>エンゲージメント</th></tr></thead>';
+  html += '<tbody>';
+  byReach.slice(0,5).forEach(function(p,i){
+    var reach = p.insights.reach||0;
+    var eng = ((p.like_count||0)+(p.comments_count||0));
+    var bar = reach > 0 ? Math.round((reach/maxReach)*100) : 0;
+    var cap = (p.caption||'（キャプションなし）').slice(0,40) + (p.caption&&p.caption.length>40?'…':'');
+    html += '<tr>';
+    html += '<td>'+rankBadge(i)+'</td>';
+    html += '<td><div class="post-thumb">'+thumbEl(p)+'</div></td>';
+    html += '<td style="white-space:nowrap">'+fmtDate(p.timestamp)+'</td>';
+    html += '<td style="font-size:11px;color:var(--muted);max-width:200px">'+cap+'</td>';
+    html += '<td><strong>'+fmt(reach)+'</strong><br><div class="eng-bar" style="margin-top:4px"><div class="eng-fill" style="width:'+bar+'%"></div></div></td>';
+    html += '<td>'+fmt(p.like_count||0)+'</td>';
+    html += '<td>'+fmt(p.insights.saved||0)+'</td>';
+    html += '<td>'+fmt(eng)+'</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+
+  // 全投稿一覧
+  html += '<div class="posts-section">';
+  html += '<div class="chart-title">📋 全投稿一覧（'+posts.length+'件）</div>';
+  html += '<table class="posts-table">';
+  html += '<thead><tr><th>日付</th><th>サムネ</th><th>キャプション</th><th>リーチ</th><th>インプレ</th><th>いいね</th><th>コメント</th><th>保存</th></tr></thead>';
+  html += '<tbody>';
+  posts.forEach(function(p){
+    var cap = (p.caption||'').slice(0,50) + (p.caption&&p.caption.length>50?'…':'');
+    html += '<tr>';
+    html += '<td style="white-space:nowrap;font-size:11px">'+fmtDate(p.timestamp)+'</td>';
+    html += '<td><div class="post-thumb">'+thumbEl(p)+'</div></td>';
+    html += '<td style="font-size:11px;color:var(--muted)">'+cap+'</td>';
+    html += '<td>'+fmt(p.insights.reach||0)+'</td>';
+    html += '<td>'+fmt(p.insights.impressions||0)+'</td>';
+    html += '<td>'+fmt(p.like_count||0)+'</td>';
+    html += '<td>'+fmt(p.comments_count||0)+'</td>';
+    html += '<td>'+fmt(p.insights.saved||0)+'</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+
+  // フッター
+  html += '<div style="text-align:center;padding:20px;font-size:11px;color:var(--muted)">レポート生成日: '+new Date().toLocaleDateString('ja-JP')+'　Powered by WebSite Pro</div>';
+
+  document.getElementById('reportContent').innerHTML = html;
+  document.getElementById('reportContent').style.display = '';
+}
+
+// ===== Copy report as text =====
+function copyReport(){
+  if(!reportData) return;
+  var d = reportData;
+  var posts = d.posts;
+  var totalReach = posts.reduce(function(s,p){ return s+(p.insights.reach||0); },0);
+  var totalLikes = posts.reduce(function(s,p){ return s+(p.like_count||0); },0);
+  var totalSaved = posts.reduce(function(s,p){ return s+(p.insights.saved||0); },0);
+  var byReach = posts.slice().sort(function(a,b){ return (b.insights.reach||0)-(a.insights.reach||0); });
+  var text = [
+    '■ '+d.clientName+' Instagram月次レポート　'+d.month.replace('-','年')+'月',
+    '',
+    '【アカウント情報】',
+    'フォロワー数: '+d.profile.followers_count.toLocaleString(),
+    '投稿数（取得）: '+posts.length+'件',
+    '',
+    '【今月のKPI】',
+    '合計リーチ: '+totalReach.toLocaleString(),
+    '合計いいね: '+totalLikes.toLocaleString(),
+    '合計保存: '+totalSaved.toLocaleString(),
+    '',
+    '【バズり投稿TOP3】',
+  ];
+  byReach.slice(0,3).forEach(function(p,i){
+    text.push((i+1)+'位: '+(p.caption||'').slice(0,30)+' / リーチ:'+(p.insights.reach||0)+' いいね:'+(p.like_count||0));
+  });
+  if(d.aiComment){ text.push('', '【AI総評】', d.aiComment); }
+  text.push('', '生成日: '+new Date().toLocaleDateString('ja-JP'));
+  navigator.clipboard.writeText(text.join('\n')).then(function(){
+    alert('レポートをクリップボードにコピーしました');
+  });
+}
+
+// デモデータ（APIなしでも確認できるように）
+function loadDemo(){
+  var demoData = {
+    profile:{ username:'sample_salon', followers_count:1842, follows_count:320, media_count:87 },
+    posts: Array.from({length:12},function(_,i){
+      return {
+        id:'post_'+i, caption:'サンプル投稿 #'+(i+1),
+        media_type:'IMAGE', timestamp: new Date(Date.now()-i*3*24*3600000).toISOString(),
+        like_count: Math.floor(Math.random()*200+20),
+        comments_count: Math.floor(Math.random()*20),
+        insights:{ reach:Math.floor(Math.random()*800+100), impressions:Math.floor(Math.random()*1200+200), saved:Math.floor(Math.random()*50), engagement:Math.floor(Math.random()*200+30) }
+      };
+    }),
+    month: document.getElementById('reportMonth').value,
+    clientName: 'サンプルサロン',
+    aiComment: 'サンプルサロン様、今月は合計リーチが好調でした。特に木曜日の投稿のエンゲージメントが高く、フォロワーの活動時間と合致していると考えられます。来月はリール動画を週2本以上投稿することで、さらなるリーチ拡大が期待できます。'
+  };
+  reportData = demoData;
+  document.getElementById('emptyState').style.display = 'none';
+  renderReport(demoData);
+}
+</script>
+
+<!-- デモボタン（開発確認用） -->
+<div style="position:fixed;bottom:16px;right:16px">
+  <button onclick="loadDemo()" style="padding:8px 14px;background:rgba(131,58,180,.3);border:1px solid rgba(131,58,180,.5);color:#c084fc;border-radius:8px;font-size:11px;cursor:pointer">
+    デモデータで確認
+  </button>
+</div>
+</body>
+</html>

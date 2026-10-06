@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KO-SK Tools Hub</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090f;--s1:#111118;--s2:#18181f;--s3:#22222c;
+  --bd:#2a2a3a;--bd2:#3a3a4a;
+  --ac:#7c3aed;--pink:#e1306c;--gold:#f59e0b;
+  --green:#16a34a;--teal:#0891b2;--blue:#2563eb;
+  --text:#f0f0f8;--muted:#7a7a90;--muted2:#5a5a70;
+  --grad:linear-gradient(135deg,#7c3aed,#e1306c);
+}
+body{background:var(--bg);color:var(--text);font-family:'Hiragino Sans','Meiryo',sans-serif;min-height:100vh}
+
+/* HEADER */
+.header{background:var(--s1);border-bottom:1px solid var(--bd);padding:0 24px;display:flex;align-items:center;gap:14px;height:56px;position:sticky;top:0;z-index:100}
+.logo{font-size:18px;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo-sub{font-size:11px;color:var(--muted)}
+.hsp{flex:1}
+.time-disp{font-size:12px;color:var(--muted);font-family:monospace}
+.header-badge{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(124,58,237,.2);color:var(--ac)}
+
+/* MAIN */
+.main{max-width:1200px;margin:0 auto;padding:28px 24px}
+
+/* STATS BAR */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+.stat-card{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s}
+.stat-card:hover{border-color:var(--ac);transform:translateY(-1px)}
+.stat-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.stat-label{font-size:11px;color:var(--muted);margin-bottom:2px}
+.stat-val{font-size:20px;font-weight:700;color:var(--text)}
+.stat-sub{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* SECTION */
+.section{margin-bottom:32px}
+.section-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.section-title{font-size:13px;font-weight:700;color:var(--text)}
+.section-line{flex:1;height:1px;background:var(--bd)}
+.section-count{font-size:10px;color:var(--muted);background:var(--s2);padding:2px 8px;border-radius:10px}
+
+/* TOOL GRID */
+.tool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.tool-card{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:18px;cursor:pointer;transition:all .2s;text-decoration:none;display:block;position:relative;overflow:hidden}
+.tool-card::before{content:'';position:absolute;inset:0;background:var(--grad);opacity:0;transition:opacity .2s}
+.tool-card:hover{border-color:transparent;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.tool-card:hover::before{opacity:.06}
+.tool-card-inner{position:relative;z-index:1}
+.tc-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:12px}
+.tc-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px}
+.tc-desc{font-size:11px;color:var(--muted);line-height:1.6}
+.tc-badge{position:absolute;top:14px;right:14px;font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px}
+.badge-new{background:rgba(22,163,74,.2);color:var(--green)}
+.badge-hot{background:rgba(225,48,108,.2);color:var(--pink)}
+.badge-key{background:rgba(245,158,11,.2);color:var(--gold)}
+.tc-tag{display:inline-block;font-size:9px;padding:2px 6px;border-radius:5px;background:var(--s2);color:var(--muted);margin-top:8px;margin-right:3px;border:1px solid var(--bd)}
+
+/* QUICK ACTIONS */
+.quick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+.qa-card{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:10px}
+.qa-card:hover{border-color:var(--ac);background:rgba(124,58,237,.06)}
+.qa-icon{font-size:16px;flex-shrink:0}
+.qa-text{font-size:12px;color:var(--text)}
+.qa-sub{font-size:10px;color:var(--muted);margin-top:1px}
+
+/* RECENT */
+.recent-list{display:flex;flex-direction:column;gap:6px}
+.recent-item{background:var(--s1);border:1px solid var(--bd);border-radius:9px;padding:10px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s}
+.recent-item:hover{border-color:var(--ac)}
+.ri-icon{font-size:16px;flex-shrink:0}
+.ri-name{font-size:12px;font-weight:600;flex:1}
+.ri-time{font-size:10px;color:var(--muted)}
+.ri-arrow{font-size:12px;color:var(--muted)}
+
+/* STATUS */
+.status-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.status-card{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:16px}
+.sc-title{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px}
+.sc-item{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px;color:var(--text)}
+.sc-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-green{background:var(--green)}
+.dot-yellow{background:var(--gold)}
+.dot-red{background:var(--pink)}
+.dot-gray{background:var(--muted2)}
+.sc-note{font-size:10px;color:var(--muted);margin-left:auto}
+
+/* STRIPE BANNER */
+.stripe-banner{background:linear-gradient(135deg,rgba(99,102,241,.15),rgba(124,58,237,.1));border:1px solid rgba(124,58,237,.3);border-radius:14px;padding:18px 22px;display:flex;align-items:center;gap:16px;margin-bottom:28px;cursor:pointer;transition:all .2s}
+.stripe-banner:hover{border-color:var(--ac)}
+.sb-icon{font-size:28px;flex-shrink:0}
+.sb-title{font-size:14px;font-weight:700;margin-bottom:3px}
+.sb-desc{font-size:12px;color:var(--muted);line-height:1.6}
+.sb-btn{padding:8px 18px;background:var(--grad);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
+
+/* FOOTER */
+.hub-footer{text-align:center;padding:24px;font-size:11px;color:var(--muted2);border-top:1px solid var(--bd);margin-top:32px}
+
+/* scrollbar */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- パスワード画面 -->
+<div id="pwScreen" style="position:fixed;inset:0;background:#0a0a0f;display:flex;align-items:center;justify-content:center;z-index:9999">
+  <div style="background:#13131a;border:1px solid #2a2a3a;border-radius:20px;padding:40px 32px;text-align:center;max-width:340px;width:90%">
+    <div style="font-size:32px;margin-bottom:16px">🔐</div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:6px;color:#f0f0f5">KO-SK Tools</div>
+    <div style="font-size:12px;color:#8888a8;margin-bottom:24px">パスワードを入力してください</div>
+    <input type="password" id="pwInput" placeholder="パスワード"
+      style="width:100%;padding:12px 16px;border:1.5px solid #2a2a3a;border-radius:10px;font-size:14px;color:#f0f0f5;background:#1a1a26;outline:none;font-family:inherit;margin-bottom:12px"
+      onkeydown="if(event.key==='Enter')checkPw()">
+    <div id="pwError" style="font-size:12px;color:#ef4444;margin-bottom:12px;display:none">パスワードが正しくありません</div>
+    <button onclick="checkPw()"
+      style="width:100%;padding:12px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit">
+      ログイン
+    </button>
+  </div>
+</div>
+
+<script>
+var PW_HASH = '8d97d987c744d3d1744dfeaca5d2d90414a96102ba635fdc3b2a0d22e6281ea2';
+// セッション中はパスワード不要
+if(sessionStorage.getItem('kosk_auth') === 'ok'){
+  document.addEventListener('DOMContentLoaded', function(){
+    document.getElementById('pwScreen').style.display = 'none';
+  });
+}
+async function checkPw(){
+  var pw = document.getElementById('pwInput').value;
+  if(!pw) return;
+  var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+  var hash = Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+  if(hash === PW_HASH){
+    sessionStorage.setItem('kosk_auth','ok');
+    document.getElementById('pwScreen').style.display = 'none';
+  } else {
+    document.getElementById('pwError').style.display = 'block';
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwInput').focus();
+  }
+}
+</script>
+<!--
+=== KO-SK Tools 設定ガイド ===
+1. 会社名・屋号が決まったら「KO-SK Tools」を変更
+2. Stripeリンクが取れたらinsta_lp.htmlのCTAボタンに設定
+3. LINEリンク: https://lin.ee/XXXXXXX を実際のURLに変更
+-->
+
+<div class="header">
+  <div>
+    <div class="logo">KO-SK Tools</div>
+    <div class="logo-sub">WEBLINO / VIRNEX / BALVIO 管理ハブ</div>
+  </div>
+  <div class="hsp"></div>
+  <div class="time-disp" id="timeDis"></div>
+  <div class="header-badge">v2.0</div>
+</div>
+
+<div class="main">
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat-card" onclick="open('invoice_manager.html')">
+      <div class="stat-icon" style="background:rgba(22,163,74,.15)">💰</div>
+      <div>
+        <div class="stat-label">今月の売上</div>
+        <div class="stat-val" id="revVal">—</div>
+        <div class="stat-sub">請求管理ツールで確認</div>
+      </div>
+    </div>
+    <div class="stat-card" onclick="open('invoice_manager.html')">
+      <div class="stat-icon" style="background:rgba(99,102,241,.15)">👥</div>
+      <div>
+        <div class="stat-label">クライアント数</div>
+        <div class="stat-val" id="clientVal">—</div>
+        <div class="stat-sub">請求管理ツールで確認</div>
+      </div>
+    </div>
+    <div class="stat-card" onclick="open('insta_report.html')">
+      <div class="stat-icon" style="background:rgba(225,48,108,.15)">📱</div>
+      <div>
+        <div class="stat-label">今月の投稿数</div>
+        <div class="stat-val" id="postVal">—</div>
+        <div class="stat-sub">分析レポートで確認</div>
+      </div>
+    </div>
+    <div class="stat-card" onclick="open('hp_studio.html')">
+      <div class="stat-icon" style="background:rgba(8,145,178,.15)">🏠</div>
+      <div>
+        <div class="stat-label">制作HP数</div>
+        <div class="stat-val" id="hpVal">—</div>
+        <div class="stat-sub">HP Studioで確認</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STRIPE BANNER -->
+  <div class="stripe-banner" onclick="window.open('https://stripe.com/jp','_blank')">
+    <div class="sb-icon">💳</div>
+    <div>
+      <div class="sb-title">Stripe でサブスク決済を設定しよう</div>
+      <div class="sb-desc">梅¥15,000・竹¥30,000・松¥60,000 の3プランを作成 → 支払いリンクをLPに貼るだけで月額課金が自動化されます。手数料3.6%・月額0円。</div>
+    </div>
+    <button class="sb-btn">Stripeを開く →</button>
+  </div>
+
+  <!-- HP制作ツール -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">🏠 WEBLINO（AIホームページ生成）</div>
+      <div class="section-line"></div>
+      <div class="section-count">5ツール</div>
+    </div>
+    <div class="tool-grid">
+      <a class="tool-card" href="hp_studio.html">
+        <div class="tc-badge badge-hot">メイン</div>
+        <div class="tool-card-inner">
+          <div class="tc-icon" style="background:rgba(124,58,237,.15)">✦</div>
+          <div class="tc-name">HP Studio</div>
+          <div class="tc-desc">チャットで話しかけるだけでHPを生成・修正。台本貼り付け・参考URL解析・インライン編集対応。</div>
+          <div><span class="tc-tag">AI生成</span><span class="tc-tag">チャット</span><span class="tc-tag">インライン編集</span></div>
+        </div>
+      </a>
+      <a class="tool-card" href="homepage_generator_animated.html">
+        <div class="tool-card-inner">
+          <div class="tc-icon" style="background:rgba(37,99,235,.15)">🔧</div>
+          <div class="tc-name">HP 詳細エディタ</div>
+          <div class="tc-desc">25種類のブロックを細かく編集。スマホ設定・チャットボット・JSON保存・一括ダウンロード対応。</div>
+          <div><span class="tc-tag">ブロック編集</span><span class="tc-tag">細かい調整</span></div>
+        </div>
+      </a>
+      <a class="tool-card" href="https://koskjpn.github.io/weblino-form/">
+        <div class="tool-card-inner">
+          <div class="tc-icon" style="background:rgba(196,148,58,.15)">📋</div>
+          <div class="tc-name">HP素材フォーム</div>
+          <div class="tc-desc">クライアントからHP制作に必要な素材・情報を収集するフォーム。プランごとに入力項目が切り替わり、写真はGoogleドライブで受け取る。Gmail自動通知対応。</div>
+          <div><span class="tc-tag">素材収集</span><span class="tc-tag">Gmail通知</span><span class="tc-tag">プラン別</span></div>
+        </div>
+      </a>
+      <a class="tool-card" href="営業用_HP.html">
+        <div class="tool-card-inner">
+          <div class="tc-icon" style="background:rgba(196,148,58,.15)">📊</div>
+          <div class="tc-name">HP営業用デモ</div>
+          <div class="tc-desc">14業種対応のHP営業デモツール。クライアントへの提案時にその場で業種別のサンプルHPを見せられる。</div>
+          <div><span class="tc-tag">営業</span><span class="tc-tag">14業種</span><span class="tc-tag">デモ</span></div>
+        </div>
+      </a>
+      <a class="tool-card" href="reel_studio.html">
+        <div class="tc-badge badge-new">強化済み</div>
+        <div class="tool-card-inner">
+          <div class="tc-icon" style="background:rgba(225,48,108,.15)">🎬</div>
+          <div class="tc-name">Reel Studio Pro</div>
+          <div class="tc-desc">リール動画の編集・書き出し。BGM・テキスト・エフェクト・テンプレート・AI字幕生成対応。</div>
+          <div><span class="tc-tag">動画編集</span><span class="tc-tag">AI字幕</span><span class="tc-tag">BGM生成</span></div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- VIRNEXツール -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">📱 VIRNEX（SNS運用サービス）</div>
+      <div class="section-line"></div>
+      <div class="section-count">6ツール</div>
+    </div>
+    <div class="tool-grid">
+      <a class="tool-card" href="content_generator.html">
+        <div class="tc-badge badge-hot">よく使う</div>
+        <div class="tool-card-inner">
+          <div class="tc-icon" style="background:rgba(124,58,237,.15)">✨</div>
+          <div class="tc-name">コンテンツ自動生成</div>
+          <div class="tc-desc">業種・テーマを選ぶだけでリール台本・キャプション・ハッシュタグを一括生成。</div>
+          <div><span class="tc-tag">AI生成</span><span class="tc-tag">台本</span><span class="tc-tag">ハッシュタグ</span></div>
+        </div>
+      </a>
+      <a class="tool-card" href="insta_report.html">
+        <div class="tool-card-inner">
+          <div class="tc-icon" style="background:rgba(245,158,11,.15)">📊</div>
+          <div class="tc-name">Instagram 分析レポート</div>
+          <div class="tc-desc">Graph APIからデータ取得して月次レポートを自動生成。PDF保存・LINEへのテキストコピー対応。</div>
+          <div><span class="tc-tag">Graph API</span><span class="tc-tag">月次レポート</span></div>
+        </div>
+      </a>
+      <a class="tool-card" href="competitor_analysis.html">
+        <div class="tool-card-inner">
+          <div class="tc-icon" style="background:rgba(8,145,178,.15)">🔍</div>
+          <div class="tc-name">競合アカウント分析</div>
+          <div class="tc-desc">競合3〜5アカウントのバズりパターン・最適投稿時間・差別化戦略をAIが分析・提案。</div>
+          <div><span class="tc-tag">競合分析</span><span class="tc-tag">戦略提案</span></div>
+        </div>
+      </a>
+      <a class="tool-card" href="client_dashboard.html">
+        <div class="tool-card-inner">
+          <div class="tc-icon" style="background:rgba(22,163,74,.15)">📱</div>
+          <div class="tc-name">クライアント ダッシュボード</div>
+          <div class="tc-desc">クライアントが自分でインスタ実績を確認できるスマホ対応ページ。URLを送るだけ。</div>
+          <div><span class="tc-tag">クライアント向け</span><span class="tc-tag">スマホ対応</span></div>
+        </div>
+      </a>
+      <a class="tool-card" href="material_form.html">
+        <div class="tool-card-inner">
+          <div class="tc-icon" style="background:rgba(225,48,108,.15)">📁</div>
+          <div class="tc-name">素材受け取りフォーム</div>
+          <div class="tc-desc">クライアントが写真・動画を送るための専用フォーム。Googleドライブに自動保存＋通知。</div>
+          <div><span class="tc-tag">素材受け取り</span><span class="tc-tag">Drive連携</span></div>
+        </div>
+      </a>
+      <a class="tool-card" href="#" onclick="alert('GASファイル（insta_gas.js）をGoogleスプレッドシートのApps Scriptに貼り付けて使います。')">
+        <div class="tc-badge badge-key">GAS</div>
+        <div class="tool-card-inner">
+          <div class="tc-icon" style="background:rgba(34,197,94,.15)">📅</div>
+          <div class="tc-name">投稿管理システム</div>
+          <div class="tc-desc">Googleスプレッドシート上で動く投稿管理。AI生成・承認メール・解約リスク検出対応。</div>
+          <div><span class="tc-tag">GAS</span><span class="tc-tag">承認フロー</span><span class="tc-tag">自動メール</span></div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- 営業・経営ツール -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">💼 営業・経営管理</div>
+      <div class="section-line"></div>
+      <div class="section-count">2ツール</div>
+    </div>
+    <div class="tool-grid">
+      <a class="tool-card" href="invoice_manager.html">
+        <div class="tc-badge badge-hot">よく使う</div>
+        <div class="tool-card-inner">
+          <div class="tc-icon" style="background:rgba(245,158,11,.15)">💰</div>
+          <div class="tc-name">請求・契約管理</div>
+          <div class="tc-desc">松竹梅プランの請求書発行・入金管理・契約管理・解約アラートを一元管理。</div>
+          <div><span class="tc-tag">請求書</span><span class="tc-tag">入金管理</span><span class="tc-tag">PDF出力</span></div>
+        </div>
+      </a>
+      <a class="tool-card" href="insta_lp.html">
+        <div class="tool-card-inner">
+          <div class="tc-icon" style="background:rgba(225,48,108,.15)">📋</div>
+          <div class="tc-name">VIRNEX 営業LP</div>
+          <div class="tc-desc">サービス販売用ランディングページ。Stripeの支払いリンクを貼るだけで申し込み受付開始。</div>
+          <div><span class="tc-tag">営業LP</span><span class="tc-tag">Stripe連携</span></div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- BALVIO 会計ソフト -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">📒 BALVIO（経理・会計ソフト）</div>
+      <div class="section-line"></div>
+      <div class="section-count">1ツール</div>
+    </div>
+    <div class="tool-grid">
+      <a class="tool-card" href="https://kaikei-app-omega-nine.vercel.app/login" target="_blank">
+        <div class="tc-badge badge-new">外部アプリ</div>
+        <div class="tool-card-inner">
+          <div class="tc-icon" style="background:rgba(8,145,178,.15)">📒</div>
+          <div class="tc-name">BALVIO</div>
+          <div class="tc-desc">売上・支出・経費・請求を一元管理できるクラウド会計ソフト。経営数字をシンプルにスマートに管理。</div>
+          <div><span class="tc-tag">会計</span><span class="tc-tag">経費管理</span><span class="tc-tag">請求管理</span><span class="tc-tag">Vercel</span></div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- クイックアクション -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">⚡ クイックアクション</div>
+      <div class="section-line"></div>
+    </div>
+    <div class="quick-grid">
+      <div class="qa-card" onclick="window.open('hp_studio.html','_blank')">
+        <div class="qa-icon">✦</div>
+        <div><div class="qa-text">新しいHPを作る</div><div class="qa-sub">HP Studio を開く</div></div>
+      </div>
+      <div class="qa-card" onclick="window.open('content_generator.html','_blank')">
+        <div class="qa-icon">✨</div>
+        <div><div class="qa-text">キャプションを生成</div><div class="qa-sub">コンテンツ生成ツール</div></div>
+      </div>
+      <div class="qa-card" onclick="window.open('insta_report.html','_blank')">
+        <div class="qa-icon">📊</div>
+        <div><div class="qa-text">月次レポートを作る</div><div class="qa-sub">分析レポートツール</div></div>
+      </div>
+      <div class="qa-card" onclick="window.open('reel_studio.html','_blank')">
+        <div class="qa-icon">🎬</div>
+        <div><div class="qa-text">リール動画を編集</div><div class="qa-sub">Reel Studio Pro</div></div>
+      </div>
+      <div class="qa-card" onclick="window.open('invoice_manager.html','_blank')">
+        <div class="qa-icon">💰</div>
+        <div><div class="qa-text">請求書を発行</div><div class="qa-sub">請求・契約管理</div></div>
+      </div>
+      <div class="qa-card" onclick="window.open('material_form.html','_blank')">
+        <div class="qa-icon">📁</div>
+        <div><div class="qa-text">素材を受け取る</div><div class="qa-sub">素材フォーム</div></div>
+      </div>
+      <div class="qa-card" onclick="window.open('competitor_analysis.html','_blank')">
+        <div class="qa-icon">🔍</div>
+        <div><div class="qa-text">競合を分析する</div><div class="qa-sub">競合分析ツール</div></div>
+      </div>
+      <div class="qa-card" onclick="window.open('https://stripe.com/jp','_blank')">
+        <div class="qa-icon">💳</div>
+        <div><div class="qa-text">Stripeで決済管理</div><div class="qa-sub">stripe.com/jp</div></div>
+      </div>
+      <div class="qa-card" onclick="window.open('https://kaikei-app-omega-nine.vercel.app/login','_blank')">
+        <div class="qa-icon">📒</div>
+        <div><div class="qa-text">BALVIOで会計管理</div><div class="qa-sub">経理・会計ソフト</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- セットアップ状況 -->
+  <div class="status-grid">
+    <div class="status-card">
+      <div class="sc-title">セットアップ状況</div>
+      <div class="sc-item"><div class="sc-dot dot-green"></div>HP Studio<div class="sc-note">✅ 使用可能</div></div>
+      <div class="sc-item"><div class="sc-dot dot-green"></div>Reel Studio Pro<div class="sc-note">✅ 使用可能</div></div>
+      <div class="sc-item"><div class="sc-dot dot-green"></div>コンテンツ生成<div class="sc-note">✅ 使用可能</div></div>
+      <div class="sc-item"><div class="sc-dot dot-green"></div>請求・契約管理<div class="sc-note">✅ 使用可能</div></div>
+      <div class="sc-item"><div class="sc-dot dot-yellow"></div>投稿管理GAS<div class="sc-note">⚠ セットアップ中</div></div>
+      <div class="sc-item"><div class="sc-dot dot-yellow"></div>Instagram分析<div class="sc-note">⚠ APIトークン必要</div></div>
+      <div class="sc-item"><div class="sc-dot dot-green"></div>BALVIO（会計ソフト）<div class="sc-note">✅ Vercelで稼働中</div></div>
+      <div class="sc-item"><div class="sc-dot dot-red"></div>Stripe決済<div class="sc-note">❌ 未設定</div></div>
+      <div class="sc-item"><div class="sc-dot dot-yellow"></div>Meta API自動投稿<div class="sc-note">⚠ GAS設定後に有効</div></div>
+    </div>
+    <div class="status-card">
+      <div class="sc-title">次にやること</div>
+      <div class="sc-item"><div class="sc-dot dot-red"></div><span>① Stripeアカウント作成・3プラン設定</span></div>
+      <div class="sc-item"><div class="sc-dot dot-red"></div><span>② InstagramアクセストークンをMeta Developersで取得</span></div>
+      <div class="sc-item"><div class="sc-dot dot-yellow"></div><span>③ GASのsetupHeaders・setupMenuを実行</span></div>
+      <div class="sc-item"><div class="sc-dot dot-yellow"></div><span>④ GASにAPIキーとメールアドレスを設定</span></div>
+      <div class="sc-item"><div class="sc-dot dot-gray"></div><span>⑤ insta_lp.htmlにStripeリンクを貼る</span></div>
+      <div class="sc-item"><div class="sc-dot dot-gray"></div><span>⑥ 最初のクライアントを1社獲得して試運転</span></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="hub-footer">
+  WEBLINO &nbsp;/&nbsp; VIRNEX &nbsp;/&nbsp; BALVIO &nbsp;|&nbsp; 仕事を、もっとシンプルに。
+</div>
+
+<script>
+// 時刻表示
+function updateTime(){
+  var now=new Date();
+  var d=now.getFullYear()+'/'+(now.getMonth()+1).toString().padStart(2,'0')+'/'+now.getDate().toString().padStart(2,'0');
+  var t=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  document.getElementById('timeDis').textContent=d+' '+t;
+}
+updateTime();setInterval(updateTime,1000);
+
+// ローカルストレージから統計を読み込む
+function loadStats(){
+  try{
+    // 請求管理から売上を取得
+    var inv=JSON.parse(localStorage.getItem('invoice_data')||'{}');
+    var clients=inv.clients||[];
+    var invoices=inv.invoices||[];
+    var now=new Date();
+    var thisMonth=now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0');
+    var monthInv=invoices.filter(function(i){return (i.issueDate||'').startsWith(thisMonth);});
+    var revenue=monthInv.reduce(function(s,i){return s+(parseInt(i.amount)||0);},0);
+    if(revenue>0)document.getElementById('revVal').textContent='¥'+revenue.toLocaleString();
+    if(clients.length>0)document.getElementById('clientVal').textContent=clients.length+'社';
+
+    // HP数（hps_htmlがあれば1以上）
+    var hpCount=0;
+    if(localStorage.getItem('hps_html'))hpCount++;
+    if(localStorage.getItem('hp_ai_generated'))hpCount++;
+    if(hpCount>0)document.getElementById('hpVal').textContent=hpCount+'件';
+  }catch(e){}
+}
+loadStats();
+</script>
+</body>
+</html>

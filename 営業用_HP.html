@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WEBLINO | ホームページ制作サービス</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090f;--s1:#0f0f18;--s2:#161620;--s3:#1e1e2c;
+  --bd:#252535;--bd2:#32324a;
+  --ac:#7c3aed;--ac2:#a855f7;--pink:#e1306c;
+  --gold:#f59e0b;--green:#16a34a;
+  --text:#f0f0f8;--muted:#7a7a90;--muted2:#50505f;
+  --grad:linear-gradient(135deg,#7c3aed,#e1306c);
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;display:flex;flex-direction:column}
+
+/* ===== HEADER ===== */
+.header{background:var(--s1);border-bottom:1px solid var(--bd);padding:0 24px;display:flex;align-items:center;gap:16px;height:52px;flex-shrink:0}
+.logo{font-family:'Playfair Display',serif;font-size:18px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:.02em}
+.logo-tag{font-size:10px;color:var(--muted);letter-spacing:.08em}
+.hsp{flex:1}
+.hbadge{font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;background:rgba(124,58,237,.15);color:var(--ac2)}
+.hbtn{padding:6px 16px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;border:none;display:flex;align-items:center;gap:5px}
+.hbtn-ghost{background:var(--s2);border:1px solid var(--bd);color:var(--muted)}
+.hbtn-ghost:hover{border-color:var(--ac);color:var(--ac)}
+.hbtn-p{background:var(--grad);color:#fff}
+.hbtn-p:hover{opacity:.85}
+.hbtn:disabled{opacity:.35;cursor:default}
+
+/* ===== MAIN ===== */
+.app{display:grid;grid-template-columns:320px 1fr;flex:1;overflow:hidden;min-height:0}
+
+/* ===== LEFT PANEL ===== */
+.left{background:var(--s1);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden}
+.left-scroll{flex:1;overflow-y:auto;padding:16px}
+
+/* 業種グリッド */
+.sec-label{font-size:9px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;margin-top:14px}
+.sec-label:first-child{margin-top:0}
+.genre-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px}
+.gbtn{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:10px 8px;cursor:pointer;transition:all .2s;text-align:center;position:relative;overflow:hidden}
+.gbtn::before{content:'';position:absolute;inset:0;background:var(--grad);opacity:0;transition:opacity .2s}
+.gbtn:hover{border-color:var(--ac);transform:translateY(-1px)}
+.gbtn:hover::before{opacity:.06}
+.gbtn.on{border-color:var(--ac);background:rgba(124,58,237,.1)}
+.gbtn.on::before{opacity:.08}
+.gbtn-inner{position:relative;z-index:1}
+.gbtn-img{width:100%;height:48px;object-fit:cover;border-radius:6px;margin-bottom:6px;display:block}
+.gbtn-icon{font-size:22px;display:block;margin-bottom:4px;line-height:1}
+.gbtn-name{font-size:11px;font-weight:700;color:var(--text);line-height:1.3}
+.gbtn-sub{font-size:9px;color:var(--muted);margin-top:2px;line-height:1.3}
+.gbtn-check{position:absolute;top:6px;right:6px;width:16px;height:16px;border-radius:50%;background:var(--ac);display:none;align-items:center;justify-content:center;font-size:9px;color:#fff}
+.gbtn.on .gbtn-check{display:flex}
+
+/* 入力フォーム */
+.form-area{padding:0 16px 16px;flex-shrink:0;border-top:1px solid var(--bd)}
+.fi-label{font-size:10px;color:var(--muted);margin-bottom:4px;margin-top:12px;display:block}
+.fi{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--text);padding:9px 11px;font-size:12px;outline:none;font-family:inherit;transition:border-color .15s}
+.fi:focus{border-color:var(--ac)}
+.fi::placeholder{color:var(--muted2)}
+.gen-btn{width:100%;padding:12px;background:var(--grad);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:12px;transition:opacity .15s;display:flex;align-items:center;justify-content:center;gap:7px}
+.gen-btn:hover{opacity:.88}
+.gen-btn:disabled{opacity:.4;cursor:default}
+.err{font-size:11px;color:#ef4444;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:7px;padding:7px 10px;margin-top:8px;display:none}
+
+/* ===== RIGHT: PREVIEW ===== */
+.preview-col{display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+
+/* 上部バー */
+.pv-bar{background:var(--s1);border-bottom:1px solid var(--bd);padding:8px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.pv-dots{display:flex;gap:5px}
+.pv-dot{width:9px;height:9px;border-radius:50%}
+.pv-dot-r{background:#ef4444}.pv-dot-y{background:#f59e0b}.pv-dot-g{background:#22c55e}
+.pv-url{flex:1;background:var(--s2);border:1px solid var(--bd);border-radius:5px;padding:4px 9px;font-size:10px;color:var(--muted);font-family:monospace}
+.pv-btns{display:flex;gap:5px}
+.pvbtn{padding:4px 10px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid var(--bd);background:var(--s2);color:var(--muted);transition:all .15s}
+.pvbtn:hover,.pvbtn.on{border-color:var(--ac);color:var(--ac)}
+.pvbtn.on{background:rgba(124,58,237,.1)}
+
+/* プレビューエリア */
+.pv-wrap{flex:1;overflow:hidden;position:relative;background:var(--s2);display:flex;align-items:flex-start;justify-content:center}
+.pv-frame-wrap{width:100%;height:100%;background:#fff;transition:all .3s}
+#previewFrame{width:100%;height:100%;border:none}
+.pv-wrap.sp-mode{padding:16px;align-items:flex-start}
+.pv-wrap.sp-mode .pv-frame-wrap{width:390px;height:calc(100% - 32px);border-radius:28px;overflow:hidden;border:6px solid var(--bd2);box-shadow:0 16px 48px rgba(0,0,0,.6)}
+
+/* Empty state */
+.empty-state{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;background:var(--s2)}
+.es-icon{font-size:52px;margin-bottom:16px;opacity:.2}
+.es-title{font-size:20px;font-weight:700;color:var(--text);opacity:.4;margin-bottom:8px}
+.es-sub{font-size:13px;color:var(--muted);line-height:1.8;opacity:.6}
+.es-arrow{font-size:28px;opacity:.2;margin-top:16px;animation:bounce 1.5s infinite}
+@keyframes bounce{0%,100%{transform:translateX(-8px)}50%{transform:translateX(0)}}
+
+/* ジャンル選択時のティーザー */
+.genre-teaser{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;background:var(--s2)}
+.gt-img{width:100%;max-width:520px;height:220px;object-fit:cover;border-radius:12px;margin-bottom:20px;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.gt-badge{font-size:10px;font-weight:700;letter-spacing:.1em;padding:4px 12px;border-radius:20px;background:rgba(124,58,237,.2);color:var(--ac2);margin-bottom:10px;display:inline-block}
+.gt-title{font-size:22px;font-weight:700;color:var(--text);margin-bottom:8px}
+.gt-desc{font-size:13px;color:var(--muted);line-height:1.7;max-width:380px}
+.gt-hint{font-size:11px;color:var(--ac2);margin-top:16px;font-weight:700}
+
+/* アクションバー */
+.action-bar{background:var(--s1);border-top:1px solid var(--bd);padding:10px 16px;display:none;align-items:center;gap:8px;flex-shrink:0}
+.action-bar.show{display:flex}
+.ab-info{flex:1;font-size:11px;color:var(--muted)}
+.ab-name{font-size:13px;font-weight:700;color:var(--text)}
+.ab-badge{font-size:9px;padding:2px 7px;border-radius:8px;background:rgba(22,163,74,.15);color:#22c55e;font-weight:700;margin-left:6px}
+.dl-btn{padding:9px 18px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all .15s;display:flex;align-items:center;gap:6px}
+.dl-sample{background:var(--s2);border:1px solid var(--bd);color:var(--muted)}
+.dl-sample:hover{border-color:var(--ac);color:var(--ac)}
+.dl-edit{background:var(--grad);color:#fff}
+.dl-edit:hover{opacity:.85}
+.dl-note{font-size:9px;color:var(--muted2);display:block;margin-top:2px;text-align:center}
+
+/* toast */
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--s2);border:1px solid var(--bd);color:var(--text);padding:8px 16px;border-radius:8px;font-size:12px;display:none;z-index:999;box-shadow:0 8px 24px rgba(0,0,0,.5);white-space:nowrap}
+.toast.show{display:block}
+
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <div class="logo">WEBLINO</div>
+  </div>
+  <div class="logo-tag">ホームページ制作サービス | 営業用デモ</div>
+  <div class="hsp"></div>
+  <span class="hbadge">14業種対応</span>
+  <button class="hbtn hbtn-ghost" onclick="toggleDevice()" id="deviceBtn">📱 スマホ</button>
+</div>
+
+<div class="app">
+
+<!-- LEFT -->
+<div class="left">
+  <div class="left-scroll">
+
+    <div class="sec-label">業種を選ぶ（16業種）</div>
+
+    <div class="genre-grid" id="genreGrid">
+      <!-- JS で生成 -->
+    </div>
+
+  </div>
+
+  <div class="form-area">
+    <label class="fi-label">店舗名・屋号</label>
+    <input class="fi" id="sname" placeholder="例：Hair Salon Bloom" maxlength="40">
+    <label class="fi-label">Googleマップ（任意）</label>
+    <input class="fi" id="mapEmbed" placeholder="共有URL または 埋め込みコードを貼り付け">
+    <div class="err" id="errMsg">業種と店舗名を入力してください</div>
+    <button class="gen-btn" id="genBtn" onclick="generate()" disabled>
+      <span>✨</span> ホームページをプレビュー
+    </button>
+  </div>
+</div>
+
+<!-- RIGHT -->
+<div class="preview-col">
+  <div class="pv-bar">
+    <div class="pv-dots"><div class="pv-dot pv-dot-r"></div><div class="pv-dot pv-dot-y"></div><div class="pv-dot pv-dot-g"></div></div>
+    <div class="pv-url" id="pvUrl">— 業種を選択してください —</div>
+    <div class="pv-btns">
+      <button class="pvbtn on" onclick="setZoom(100,this)">100%</button>
+      <button class="pvbtn" onclick="setZoom(75,this)">75%</button>
+      <button class="pvbtn" onclick="setZoom(50,this)">50%</button>
+    </div>
+  </div>
+
+  <div class="pv-wrap" id="pvWrap">
+    <!-- Empty -->
+    <div class="empty-state" id="emptyState">
+      <div class="es-icon">🏠</div>
+      <div class="es-title">業種を選んでください</div>
+      <div class="es-sub">左のパネルから業種をクリックすると<br>ホームページのプレビューが表示されます</div>
+      <div class="es-arrow">←</div>
+    </div>
+
+    <!-- ジャンルティーザー -->
+    <div class="genre-teaser" id="genreTeaser">
+      <img class="gt-img" id="teaserImg" src="" alt="">
+      <div class="gt-badge" id="teaserBadge">SALON</div>
+      <div class="gt-title" id="teaserTitle">業種名</div>
+      <div class="gt-desc" id="teaserDesc">説明</div>
+      <div class="gt-hint">↓ 店舗名を入力してプレビューを生成</div>
+    </div>
+
+    <!-- プレビューフレーム -->
+    <div class="pv-frame-wrap" id="pvFrameWrap" style="display:none">
+      <iframe id="previewFrame" sandbox="allow-same-origin allow-scripts"></iframe>
+    </div>
+  </div>
+
+  <!-- アクションバー -->
+  <div class="action-bar" id="actionBar">
+    <div class="ab-info">
+      <div class="ab-name" id="abName">—</div>
+      <span class="ab-badge">プレビュー生成済み</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center">
+      <button class="dl-btn dl-sample" onclick="dlSample()">⬇ サンプルDL<br><span class="dl-note">クライアント用（編集不可）</span></button>
+    </div>
+    <!-- 編集用DL: KO-SK専用（クライアントに非表示） -->
+    <div style="display:none">
+      <button class="dl-btn dl-edit" onclick="dlEdit()">✏ 編集用DL</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== DATA =====
+var T = {
+  eye:{name:'アイサロン',sub:'Eye Lash Salon',tag:'BEAUTY',col:'#0D0A14',ac:'#9B6FD4',
+    catch:'自然な美しさを、あなたの目元から。',
+    desc:'まつ毛エクステ・アイブロウ専門サロン。完全個室・予約制で丁寧な施術。',
+    menu:[['まつ毛エクステ 80本','¥5,500'],['まつ毛エクステ 120本','¥7,700'],['アイブロウスタイリング','¥4,400'],['まつ毛パーマ','¥6,600'],['オフ込みフルセット','¥9,900']],
+    hero:'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=1400&q=85&auto=format&fit=crop',
+    imgs:['https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1526045612212-70caf35c14df?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1580489944761-15a19d654956?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1548902378-2ec44c906391?w=800&q=80&auto=format&fit=crop']},
+
+  estec:{name:'エステ',sub:'Casual Esthetic Salon',tag:'ESTHE',col:'#120818',ac:'#B06EC4',
+    catch:'気軽に通える、本格エステ体験。',
+    desc:'フェイシャル・ボディケア・脱毛。リラックスできる空間でプロの施術をリーズナブルに。',
+    menu:[['フェイシャルベーシック 40分','¥3,300'],['ボディケア 60分','¥5,500'],['トライアルコース 30分','¥1,980'],['脱毛（部分）1回','¥2,200'],['フルボディ 90分','¥8,800']],
+    hero:'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=1400&q=85&auto=format&fit=crop',
+    imgs:['https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=800&q=80&auto=format&fit=crop']},
+
+  cafec:{name:'カフェ',sub:'Casual Cafe',tag:'CAFE',col:'#0a0705',ac:'#C47B3E',
+    catch:'日常に、ほっとする一杯を。',
+    desc:'こだわりのコーヒーと手作りスイーツ。居心地のよい空間で、あなたの日常をもっと豊かに。',
+    menu:[['ドリップコーヒー','¥480'],['カフェラテ','¥580'],['本日のケーキ','¥480'],['モーニングセット','¥680'],['パスタランチ','¥980']],
+    hero:'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1400&q=85&auto=format&fit=crop',
+    imgs:['https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1541167760496-1628856ab772?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1453614512568-c4024d13c247?w=800&q=80&auto=format&fit=crop']},
+
+  nail:{name:'ネイルサロン',sub:'Nail Salon',tag:'NAIL',col:'#0e0810',ac:'#D4669A',
+    catch:'指先から、あなたらしさを。',
+    desc:'トレンドのデザインから定番まで。丁寧な施術と豊富なカラーでおしゃれな指先をご提案します。',
+    menu:[['ジェルネイル（手・オフ込）','¥8,800'],['フットジェル（オフ込）','¥7,700'],['アート追加（1本）','¥330〜'],['ケアコース','¥4,400'],['まつ毛+ネイルセット','¥14,300']],
+    hero:'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=1400&q=85&auto=format&fit=crop',
+    imgs:['https://images.unsplash.com/photo-1604654894610-df63bc536371?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1619607146034-5a05296c8f9a?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1519014816548-bf5fe059798b?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1571290274554-6a2eaa771e5f?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1604654894611-6973b376cbde?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1587729927069-ef3b7a5ab9b4?w=800&q=80&auto=format&fit=crop']},
+
+  salon:{name:'美容室',sub:'Hair Salon',tag:'HAIR',col:'#080a0c',ac:'#6B9EB2',
+    catch:'髪は、その人の印象を変える。',
+    desc:'カット・カラー・パーマ・トリートメント。あなたの髪のコンディションに合わせた最高の施術をご提供。',
+    menu:[['カット','¥4,400'],['カラー','¥8,800〜'],['パーマ','¥11,000〜'],['縮毛矯正','¥16,500〜'],['トリートメント','¥3,300〜']],
+    hero:'https://images.unsplash.com/photo-1560869713-7d0a29430803?w=1400&q=85&auto=format&fit=crop',
+    imgs:['https://images.unsplash.com/photo-1560869713-7d0a29430803?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1634449571010-02389ed0f9b0?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1512690459411-b9245aed614b?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=800&q=80&auto=format&fit=crop']},
+
+  relax:{name:'整体・リラクゼーション',sub:'Relaxation Salon',tag:'RELAX',col:'#060a08',ac:'#5A8A6A',
+    catch:'疲れた体と心に、安らぎを。',
+    desc:'全身もみほぐし・骨盤矯正・鍼灸。根本から体の不調を改善し、毎日を快適に過ごせる体づくりをサポート。',
+    menu:[['全身もみほぐし 60分','¥4,400'],['骨盤矯正コース','¥5,500'],['肩・首集中コース 30分','¥2,750'],['ヘッドスパ 40分','¥3,850'],['首・肩・腰 フルコース 90分','¥7,700']],
+    hero:'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=1400&q=85&auto=format&fit=crop',
+    imgs:['https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=800&q=80&auto=format&fit=crop']},
+
+  bar:{name:'Bar',sub:'Cocktail Bar',tag:'BAR',col:'#04030a',ac:'#9B6FD4',
+    catch:'夜を、もっと特別に。',
+    desc:'こだわりのカクテルとウイスキー。大人が静かに過ごせる空間で、特別な一夜を演出します。',
+    menu:[['シグネチャーカクテル','¥1,400〜'],['ウイスキー（シングル）','¥800〜'],['ボトルキープ','¥8,000〜'],['フードメニュー','¥600〜'],['チャージ','¥500']],
+    hero:'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=1400&q=85&auto=format&fit=crop',
+    imgs:['https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1516997121675-4c2d1684aa3e?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1574096079513-d8259312b785?w=800&q=80&auto=format&fit=crop']},
+
+  japanese:{name:'和食',sub:'Japanese Restaurant',tag:'和食',col:'#070504',ac:'#C4743A',
+    catch:'日本の食文化が宿る、一皿。',
+    desc:'旬の素材にこだわった本格和食。季節の移ろいを感じながら、丁寧に仕上げた料理をご堪能ください。',
+    menu:[['おまかせコース','¥12,000〜'],['会席料理（5品）','¥6,600'],['天ぷら定食','¥1,980'],['刺身盛り合わせ','¥2,800'],['個室（要予約）','応相談']],
+    hero:'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=1400&q=85&auto=format&fit=crop',
+    imgs:['https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1611143669185-af224c5e3252?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?w=800&q=80&auto=format&fit=crop']},
+
+  western:{name:'レストラン',sub:'French & Italian',tag:'DINE',col:'#07060e',ac:'#8A7ACE',
+    catch:'食卓に、非日常のひとときを。',
+    desc:'フレンチとイタリアンの融合。上質な食材と洗練された料理で、特別な日の食事をより豊かに演出します。',
+    menu:[['ランチコース','¥3,800'],['ディナーコース','¥9,800〜'],['ペアリングコース','¥15,000〜'],['記念日プラン','応相談'],['個室（4〜12名）','要予約']],
+    hero:'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1400&q=85&auto=format&fit=crop',
+    imgs:['https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?w=800&q=80&auto=format&fit=crop']},
+
+  corporate:{name:'コーポレート',sub:'Corporate Website',tag:'BIZ',col:'#04060e',ac:'#4B7BE8',
+    catch:'信頼と実績が、すべてを語る。',
+    desc:'企業サイト・会社案内・採用サイト。ビジネスの信頼性を高め、パートナーと顧客に選ばれるWebサイトを構築します。',
+    menu:[['コーポレートサイト制作','¥200,000〜'],['LP制作','¥80,000〜'],['採用サイト制作','¥150,000〜'],['月額保守・更新','¥20,000〜'],['SEO対策','¥30,000〜']],
+    hero:'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1400&q=85&auto=format&fit=crop',
+    imgs:['https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80&auto=format&fit=crop']},
+
+  yoga:{name:'ヨガ・ピラティス',sub:'Yoga & Pilates Studio',tag:'YOGA',col:'#060a09',ac:'#6BAE8A',
+    catch:'呼吸と動きで、心と体を整える。',
+    desc:'ヨガ・ピラティス専門スタジオ。少人数制クラスで初心者から上級者まで丁寧に指導。',
+    menu:[['体験レッスン 60分','¥1,100'],['月4回コース','¥7,700'],['月8回コース','¥13,200'],['プライベートレッスン 50分','¥8,800'],['オンラインクラス（月4回）','¥5,500']],
+    hero:'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=1400&q=85&auto=format&fit=crop',
+    imgs:['https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1552196563-55cd4e45efb3?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?w=800&q=80&auto=format&fit=crop']},
+
+  gym:{name:'ジム・パーソナル',sub:'Personal Training Gym',tag:'GYM',col:'#060608',ac:'#E05A2B',
+    catch:'限界を超えた先に、新しい自分がいる。',
+    desc:'パーソナルトレーニング専門ジム。完全個室・マンツーマン指導で、短期間で確実に結果を出す。',
+    menu:[['体験トレーニング 60分','¥3,300'],['月4回コース（60分）','¥33,000'],['月8回コース（60分）','¥55,000'],['栄養指導込みプレミアム','¥77,000'],['学生割引プラン','¥22,000〜']],
+    hero:'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1400&q=85&auto=format&fit=crop',
+    imgs:['https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=80&auto=format&fit=crop']},
+
+  seikotsu:{name:'整骨院・接骨院',sub:'Osteopathic Clinic',tag:'CLINIC',col:'#050810',ac:'#4A8FD4',
+    catch:'痛みのない毎日を、取り戻す。',
+    desc:'骨盤矯正・肩こり・腰痛・スポーツ障害に特化した整骨院。保険診療対応。',
+    menu:[['初回カウンセリング＋施術','¥3,300'],['骨盤矯正コース','¥4,400'],['腰痛・肩こり集中ケア','¥3,850'],['スポーツ障害リハビリ','¥5,500'],['保険診療（窓口負担）','¥300〜']],
+    hero:'https://images.unsplash.com/photo-1559757175-5700dde675bc?w=1400&q=85&auto=format&fit=crop',
+    imgs:['https://images.unsplash.com/photo-1559757175-5700dde675bc?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&q=80&auto=format&fit=crop']},
+
+  realestate:{name:'不動産・工務店',sub:'Real Estate & Construction',tag:'BUILD',col:'#060508',ac:'#C4943A',
+    catch:'理想の暮らしを、カタチにする。',
+    desc:'新築・リフォーム・不動産売買。地域に根ざした信頼と実績で、お客様の住まいに関するすべてのご相談に対応します。',
+    menu:[['新築住宅（注文）','¥2,500万〜'],['リフォーム・リノベーション','¥100万〜'],['不動産売買仲介','成約価格×3%'],['土地探し・資金計画相談','無料'],['アフターメンテナンス','応相談']],
+    hero:'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1400&q=85&auto=format&fit=crop',
+    imgs:['https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1513584684374-8bab748fbf90?w=800&q=80&auto=format&fit=crop','https://images.unsplash.com/photo-1448630360428-65456885c650?w=800&q=80&auto=format&fit=crop']}
+};
+
+var genreKeys = Object.keys(T);
+var selectedGenre = null;
+var generatedHTML = '';
+var isSP = false;
+
+// ===== INIT =====
+(function(){
+  var grid = document.getElementById('genreGrid');
+  genreKeys.forEach(function(key){
+    var t = T[key];
+    var btn = document.createElement('div');
+    btn.className = 'gbtn';
+    btn.onclick = function(){ selectGenre(key); };
+    btn.innerHTML =
+      '<div class="gbtn-inner">'+
+      '<img class="gbtn-img" src="'+t.hero+'" alt="" loading="lazy">'+
+      '<div class="gbtn-name">'+t.name+'</div>'+
+      '<div class="gbtn-sub">'+t.sub+'</div>'+
+      '<div class="gbtn-check">✓</div>'+
+      '</div>';
+    grid.appendChild(btn);
+  });
+  document.getElementById('sname').addEventListener('input', onInput);
+})();
+
+function onInput(){
+  var hasGenre = selectedGenre !== null;
+  var hasName = document.getElementById('sname').value.trim().length > 0;
+  document.getElementById('genBtn').disabled = !(hasGenre && hasName);
+}
+
+function selectGenre(key){
+  selectedGenre = key;
+  var t = T[key];
+  // ボタンのon状態
+  document.querySelectorAll('.gbtn').forEach(function(b){ b.classList.remove('on'); });
+  event.currentTarget.classList.add('on');
+  // ティーザー表示
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('pvFrameWrap').style.display = 'none';
+  document.getElementById('actionBar').classList.remove('show');
+  var teaser = document.getElementById('genreTeaser');
+  teaser.style.display = 'flex';
+  document.getElementById('teaserImg').src = t.hero;
+  document.getElementById('teaserImg').style.display = '';
+  document.getElementById('teaserBadge').textContent = t.tag;
+  document.getElementById('teaserTitle').textContent = t.catch;
+  document.getElementById('teaserDesc').textContent = t.desc;
+  document.getElementById('pvUrl').textContent = 'preview://'+t.sub.toLowerCase().replace(/\s/g,'-')+'.jp';
+  onInput();
+}
+
+// ===== GENERATE =====
+function generate(){
+  var name = document.getElementById('sname').value.trim();
+  if(!selectedGenre || !name){
+    document.getElementById('errMsg').style.display='block'; return;
+  }
+  document.getElementById('errMsg').style.display='none';
+  var t = T[selectedGenre];
+  var mapRaw = document.getElementById('mapEmbed').value.trim();
+  var mapSrc = extractMapSrc(mapRaw);
+  generatedHTML = buildHP(name, t, mapSrc);
+  showPreview(generatedHTML, name);
+}
+
+function extractMapSrc(v){
+  var m = v.match(/src="([^"]+)"/);
+  if(m) return m[1];
+  if(v.startsWith('http')) return v;
+  return '';
+}
+
+function showPreview(html, name){
+  document.getElementById('genreTeaser').style.display='none';
+  document.getElementById('emptyState').style.display='none';
+  document.getElementById('pvFrameWrap').style.display='';
+  document.getElementById('previewFrame').srcdoc = html;
+  document.getElementById('pvUrl').textContent = name.toLowerCase().replace(/\s/g,'-')+'.com';
+  document.getElementById('actionBar').classList.add('show');
+  document.getElementById('abName').textContent = name + ' - ' + T[selectedGenre].name;
+}
+
+// ===== HP BUILDER =====
+function buildHP(name, t, mapSrc){
+  var gi = t.imgs.map(function(src,i){
+    return '<div class="gi" style="animation-delay:'+(i*0.08)+'s"><img src="'+src+'" loading="lazy" alt="" style="width:100%;height:100%;object-fit:cover;display:block"></div>';
+  }).join('');
+  var mr = t.menu.map(function(m){
+    return '<div class="mr"><span class="mn">'+m[0]+'</span><span class="mp">'+m[1]+'</span></div>';
+  }).join('');
+  var mapSec = mapSrc ?
+    '<section class="map-sec"><div class="sl">ACCESS</div><div class="st">アクセス</div>'+
+    '<div class="mf"><iframe src="'+mapSrc+'" width="100%" height="340" style="border:0;border-radius:8px;display:block" allowfullscreen loading="lazy"></iframe></div></section>' : '';
+  var l0 = name.split(' ')[0], l1 = name.split(' ').slice(1).join(' ');
+
+  return '<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">'+
+    '<meta name="viewport" content="width=device-width,initial-scale=1">'+
+    '<title>'+name+'</title>'+
+    '<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">'+
+    '<style>'+
+    '*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}'+
+    'body{font-family:"Noto Sans JP",sans-serif;background:'+t.col+';color:#e8e8e8;overflow-x:hidden}'+
+    '::selection{background:'+t.ac+';color:#000}'+
+    // ナビ
+    'header{position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 48px;display:flex;align-items:center;justify-content:space-between;transition:all .4s}'+
+    'header.sc{background:rgba(10,10,10,.9);backdrop-filter:blur(16px);padding:14px 48px}'+
+    '.logo{font-family:"Playfair Display",serif;font-size:18px;font-weight:400;letter-spacing:.15em;color:#fff}'+
+    '.logo em{color:'+t.ac+';font-style:normal}'+
+    'nav{display:flex;gap:32px}'+
+    'nav a{color:rgba(255,255,255,.5);text-decoration:none;font-size:11px;letter-spacing:.12em;transition:color .2s}'+
+    'nav a:hover{color:#fff}'+
+    // ヒーロー
+    '.hero{height:100vh;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}'+
+    '.hbg{position:absolute;inset:0;background:url('+t.hero+') center/cover;transform:scale(1.06);transition:transform 10s ease-out}'+
+    '.hbg.ld{transform:scale(1)}'+
+    '.hov{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.2) 0%,rgba(0,0,0,.55) 100%)}'+
+    '.hc{position:relative;text-align:center;padding:0 24px;max-width:800px}'+
+    '.he{font-size:11px;letter-spacing:.3em;color:'+t.ac+';margin-bottom:20px;opacity:0;animation:fu .9s .2s forwards}'+
+    '.ht{font-family:"Playfair Display",serif;font-size:clamp(36px,5.5vw,72px);font-weight:400;color:#fff;line-height:1.15;margin-bottom:20px;opacity:0;animation:fu .9s .4s forwards;letter-spacing:.04em}'+
+    '.hs{font-size:14px;color:rgba(255,255,255,.55);letter-spacing:.08em;opacity:0;animation:fu .9s .6s forwards;line-height:1.8}'+
+    '.hline{width:1px;height:60px;background:linear-gradient(to bottom,transparent,'+t.ac+',transparent);margin:32px auto;opacity:0;animation:fu .9s .8s forwards}'+
+    '.scr{font-size:10px;letter-spacing:.2em;color:rgba(255,255,255,.4);opacity:0;animation:fu .9s 1s forwards}'+
+    '@keyframes fu{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}'+
+    // セクション共通
+    'section{padding:100px 48px;max-width:1100px;margin:0 auto}'+
+    '.sl{font-size:10px;letter-spacing:.3em;color:'+t.ac+';margin-bottom:12px}'+
+    '.st{font-family:"Playfair Display",serif;font-size:clamp(28px,3vw,42px);font-weight:400;color:#fff;margin-bottom:48px;line-height:1.3;letter-spacing:.04em}'+
+    // ギャラリー
+    '.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:0}'+
+    '.gi{overflow:hidden;aspect-ratio:4/3;opacity:0;animation:fu .8s forwards}'+
+    '.gi img{width:100%;height:100%;object-fit:cover;transition:transform .6s}'+
+    '.gi:hover img{transform:scale(1.06)}'+
+    // メニュー
+    '.menu-list{display:flex;flex-direction:column;gap:0;border-top:1px solid rgba(255,255,255,.08)}'+
+    '.mr{display:flex;align-items:center;justify-content:space-between;padding:20px 0;border-bottom:1px solid rgba(255,255,255,.08);opacity:0;animation:fu .7s forwards}'+
+    '.mn{font-size:14px;color:#e8e8e8;letter-spacing:.04em}'+
+    '.mp{font-size:14px;color:'+t.ac+';font-family:"Playfair Display",serif;letter-spacing:.04em}'+
+    // マップ
+    '.map-sec{padding:100px 0;max-width:100%}'+
+    '.map-sec .sl,.map-sec .st{padding:0 48px}'+
+    '.mf{margin-top:0}'+
+    // フッター
+    'footer{padding:60px 48px;text-align:center;border-top:1px solid rgba(255,255,255,.06)}'+
+    '.fl{font-family:"Playfair Display",serif;font-size:22px;font-weight:400;letter-spacing:.15em;color:#fff;margin-bottom:12px}'+
+    '.fl em{color:'+t.ac+';font-style:normal}'+
+    '.fs{font-size:11px;color:rgba(255,255,255,.25);letter-spacing:.08em;margin-top:32px}'+
+    // intersection observer
+    '.reveal{opacity:0;transform:translateY(24px);transition:opacity .8s,transform .8s}'+
+    '.reveal.visible{opacity:1;transform:none}'+
+    '@media(max-width:768px){header{padding:16px 24px}header.sc{padding:12px 24px}section{padding:72px 24px}.gallery{grid-template-columns:repeat(2,1fr)}nav{display:none}footer{padding:48px 24px}}'+
+    '</style></head><body>'+
+    '<header id="hd"><div class="logo"><em>'+l0+'</em>'+(l1?' '+l1:'')+'</div>'+
+    '<nav><a href="#about">ABOUT</a><a href="#menu">MENU</a><a href="#access">ACCESS</a></nav></header>'+
+    '<div class="hero"><div class="hbg" id="hbg"></div><div class="hov"></div>'+
+    '<div class="hc"><div class="he">'+t.sub+'</div>'+
+    '<h1 class="ht">'+name+'</h1>'+
+    '<p class="hs">'+t.catch+'</p>'+
+    '<div class="hline"></div>'+
+    '<div class="scr">SCROLL</div></div></div>'+
+    '<section id="about" class="reveal"><div class="sl">ABOUT</div><div class="st">私たちについて</div>'+
+    '<p style="font-size:14px;color:rgba(255,255,255,.55);line-height:2;max-width:600px;letter-spacing:.04em">'+t.desc+'</p></section>'+
+    '<div class="gallery">'+gi+'</div>'+
+    '<section id="menu" class="reveal"><div class="sl">MENU</div><div class="st">メニュー・料金</div>'+
+    '<div class="menu-list">'+mr+'</div></section>'+
+    mapSec+
+    '<footer><div class="fl"><em>'+l0+'</em>'+(l1?' '+l1:'')+'</div>'+
+    '<div style="font-size:12px;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-top:8px">'+t.sub+'</div>'+
+    '<div class="fs">© '+new Date().getFullYear()+' '+name+'. All rights reserved.<br>Powered by WEBLINO</div></footer>'+
+    '<script>'+
+    'window.addEventListener("scroll",function(){var h=document.getElementById("hd");h&&(h.className=window.scrollY>50?"sc":"");});'+
+    'setTimeout(function(){var b=document.getElementById("hbg");b&&b.classList.add("ld");},100);'+
+    'var obs=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("visible");obs.unobserve(e.target);}});},{threshold:0.15});'+
+    'document.querySelectorAll(".reveal,.gi,.mr").forEach(function(el){obs.observe(el);});'+
+    '<\/script></body></html>';
+}
+
+// ===== DOWNLOAD =====
+function dlSample(){
+  if(!generatedHTML){ toast('先にプレビューを生成してください'); return; }
+  // サンプル版：「Powered by WEBLINO」バナーを追加
+  var sampleHTML = generatedHTML.replace('</body>',
+    '<div style="position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,10,.95);color:#fff;text-align:center;padding:10px;font-size:11px;font-family:sans-serif;z-index:9999;border-top:1px solid rgba(255,255,255,.1)">'+
+    'このサイトは <strong style="color:#a855f7">WEBLINO</strong> で制作されたサンプルです。正式版のご依頼はお気軽にご相談ください。</div>'+
+    '</body>');
+  dl(sampleHTML, 'sample_' + T[selectedGenre].name + '.html');
+  toast('サンプルHTMLをダウンロードしました');
+}
+
+function dlEdit(){
+  if(!generatedHTML){ toast('先にプレビューを生成してください'); return; }
+  // 編集用：そのまま（hp_studioで開ける）
+  // localStorage に保存してhp_studioで開ける形式
+  try{ localStorage.setItem('hp_ai_generated', generatedHTML); }catch(e){}
+  dl(generatedHTML, 'edit_' + document.getElementById('sname').value.trim() + '.html');
+  toast('編集用HTMLをダウンロード。HP Studioにドロップして編集できます！');
+}
+
+function dl(html, filename){
+  var a = document.createElement('a');
+  a.href = 'data:text/html;charset=utf-8,' + encodeURIComponent(html);
+  a.download = filename;
+  a.click();
+}
+
+// ===== UI =====
+function toggleDevice(){
+  isSP = !isSP;
+  document.getElementById('pvWrap').className = 'pv-wrap' + (isSP ? ' sp-mode' : '');
+  document.getElementById('deviceBtn').textContent = isSP ? '🖥 PC' : '📱 スマホ';
+}
+
+function setZoom(p, el){
+  var w = document.getElementById('pv-frame-wrap') || document.getElementById('pvFrameWrap');
+  if(p===100){ w.style.transform='';w.style.width='100%';w.style.height='100%'; }
+  else{ w.style.transformOrigin='top left';w.style.transform='scale('+p/100+')';w.style.width=(100/(p/100))+'%';w.style.height=(100/(p/100))+'%'; }
+  document.querySelectorAll('.pvbtn').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on');
+}
+
+function toast(msg){ var t=document.getElementById('toast');t.textContent=msg;t.className='toast show';setTimeout(function(){t.className='toast';},2800); }
+</script>
+</body>
+</html>

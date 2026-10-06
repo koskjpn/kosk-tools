@@ -1,0 +1,783 @@
+<!DOCTYPE htm
+
+  <div id="page-calendar" class="page">
+    <div class="sec">
+      <div class="sec-title">📆 投稿カレンダー</div>
+
+      <!-- カレンダーヘッダー -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <button onclick="prevMonth()" style="padding:6px 14px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;font-size:13px">‹</button>
+        <div id="calMonthLabel" style="font-size:15px;font-weight:700;color:var(--text)"></div>
+        <button onclick="nextMonth()" style="padding:6px 14px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;font-size:13px">›</button>
+      </div>
+
+      <!-- 曜日ヘッダー -->
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px">
+        <div style="text-align:center;font-size:10px;color:#ef4444;padding:4px">日</div>
+        <div style="text-align:center;font-size:10px;color:var(--muted);padding:4px">月</div>
+        <div style="text-align:center;font-size:10px;color:var(--muted);padding:4px">火</div>
+        <div style="text-align:center;font-size:10px;color:var(--muted);padding:4px">水</div>
+        <div style="text-align:center;font-size:10px;color:var(--muted);padding:4px">木</div>
+        <div style="text-align:center;font-size:10px;color:var(--muted);padding:4px">金</div>
+        <div style="text-align:center;font-size:10px;color:#3b82f6;padding:4px">土</div>
+      </div>
+
+      <!-- カレンダーグリッド -->
+      <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px"></div>
+
+      <!-- 凡例 -->
+      <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)">
+          <div style="width:10px;height:10px;border-radius:50%;background:#16a34a"></div>承認済み
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)">
+          <div style="width:10px;height:10px;border-radius:50%;background:#f59e0b"></div>承認待ち
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)">
+          <div style="width:10px;height:10px;border-radius:50%;background:#6b7280"></div>下書き
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)">
+          <div style="width:10px;height:10px;border-radius:50%;background:#e1306c"></div>リール
+        </div>
+      </div>
+    </div>
+
+    <!-- 選択した日の投稿詳細 -->
+    <div class="sec" id="calDetailSec" style="display:none">
+      <div class="sec-title" id="calDetailTitle">投稿詳細</div>
+      <div id="calDetailBody"></div>
+    </div>
+
+    <!-- 今月の投稿サマリー -->
+    <div class="sec">
+      <div class="sec-title">📊 今月のサマリー</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+        <div style="text-align:center;background:var(--surface);border-radius:10px;padding:12px">
+          <div style="font-size:22px;font-weight:700;color:#16a34a" id="calApproved">0</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">承認済み</div>
+        </div>
+        <div style="text-align:center;background:var(--surface);border-radius:10px;padding:12px">
+          <div style="font-size:22px;font-weight:700;color:#f59e0b" id="calPending">0</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">承認待ち</div>
+        </div>
+        <div style="text-align:center;background:var(--surface);border-radius:10px;padding:12px">
+          <div style="font-size:22px;font-weight:700;color:var(--muted)" id="calDraft">0</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">下書き</div>
+        </div>
+      </div>
+    </div>
+  </div>l>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VIRNEX | クライアントダッシュボード</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#faf9f7;
+  --surface:#ffffff;
+  --border:#ece8e2;
+  --accent:#e1306c;
+  --purple:#833ab4;
+  --gold:#f59e0b;
+  --green:#16a34a;
+  --text:#1a1a2e;
+  --muted:#888;
+  --card:#fff;
+  --grad:linear-gradient(135deg,#833ab4,#e1306c,#f77737);
+}
+body{background:var(--bg);color:var(--text);font-family:'Hiragino Sans','Meiryo',sans-serif;min-height:100vh}
+
+/* hero */
+.hero{background:var(--grad);padding:0;position:relative;overflow:hidden}
+.hero-inner{padding:32px 24px 28px;position:relative;z-index:1}
+.hero::before{content:'';position:absolute;inset:0;background:rgba(0,0,0,.18)}
+.hero-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.hero-logo{font-size:12px;font-weight:700;color:rgba(255,255,255,.8);letter-spacing:.1em}
+.hero-period{font-size:11px;color:rgba(255,255,255,.6);background:rgba(255,255,255,.12);padding:4px 10px;border-radius:20px}
+.hero-name{font-size:26px;font-weight:700;color:#fff;margin-bottom:4px}
+.hero-handle{font-size:13px;color:rgba(255,255,255,.7);margin-bottom:20px}
+.hero-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.hero-kpi{background:rgba(255,255,255,.15);border-radius:10px;padding:12px;text-align:center;backdrop-filter:blur(4px)}
+.hero-kpi-val{font-size:22px;font-weight:700;color:#fff;letter-spacing:-.02em}
+.hero-kpi-label{font-size:10px;color:rgba(255,255,255,.7);margin-top:3px}
+.hero-kpi-change{font-size:10px;color:rgba(255,255,255,.6);margin-top:1px}
+
+/* nav */
+.nav{display:flex;gap:0;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.nav-item{padding:14px 20px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .15s;flex-shrink:0}
+.nav-item.on{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* pages */
+.page{display:none;padding:20px 16px;max-width:720px;margin:0 auto}
+.page.on{display:block}
+
+/* section */
+.sec{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:16px}
+.sec-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.sec-sub{font-size:11px;color:var(--muted);margin-left:auto;font-weight:400}
+
+/* stats row */
+.stats-row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+.stat-box{background:var(--bg);border-radius:10px;padding:14px}
+.stat-icon{font-size:18px;margin-bottom:6px}
+.stat-label{font-size:10px;color:var(--muted);margin-bottom:3px}
+.stat-val{font-size:20px;font-weight:700;color:var(--text)}
+.stat-change{font-size:10px;margin-top:2px}
+.up{color:var(--green)}
+.down{color:var(--accent)}
+
+/* bar chart */
+.bar-chart{display:flex;flex-direction:column;gap:8px}
+.bar-row{display:flex;align-items:center;gap:8px;font-size:11px}
+.bar-label{width:30px;color:var(--muted);flex-shrink:0;text-align:right}
+.bar-wrap{flex:1;background:var(--bg);border-radius:4px;height:10px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;background:var(--grad);transition:width .8s ease}
+.bar-val{width:35px;color:var(--muted);text-align:right;flex-shrink:0}
+
+/* post cards */
+.post-card{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.post-card:last-child{border-bottom:none}
+.post-thumb{width:56px;height:56px;border-radius:8px;background:linear-gradient(135deg,var(--purple),var(--accent));flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden}
+.post-thumb img{width:100%;height:100%;object-fit:cover}
+.post-info{flex:1;min-width:0}
+.post-date{font-size:10px;color:var(--muted);margin-bottom:3px}
+.post-caption{font-size:12px;color:var(--text);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.post-stats{display:flex;gap:10px;margin-top:6px;font-size:11px;color:var(--muted)}
+.post-stat{display:flex;align-items:center;gap:3px}
+.rank-circle{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.r1{background:#f59e0b;color:#fff}
+.r2{background:#9ca3af;color:#fff}
+.r3{background:#92400e;color:#fff}
+.rn{background:var(--bg);color:var(--muted)}
+
+/* schedule */
+.sched-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.sched-item:last-child{border-bottom:none}
+.sched-date{font-size:11px;color:var(--muted);min-width:60px;flex-shrink:0}
+.sched-status{font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;flex-shrink:0}
+.s-approved{background:#dcfce7;color:var(--green)}
+.s-pending{background:#fef3c7;color:var(--gold)}
+.s-draft{background:#f3f4f6;color:var(--muted)}
+.sched-cap{font-size:12px;color:var(--text);flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+
+/* message */
+.msg-bubble{background:linear-gradient(135deg,rgba(131,58,180,.1),rgba(225,48,108,.08));border:1px solid rgba(131,58,180,.2);border-radius:14px;border-top-left-radius:4px;padding:14px 16px;margin-bottom:12px;font-size:13px;line-height:1.8;color:var(--text)}
+.msg-from{font-size:10px;color:var(--purple);font-weight:700;margin-bottom:6px}
+
+/* tips */
+.tip-card{background:var(--bg);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:10px 12px;margin-bottom:8px;font-size:12px;color:var(--text);line-height:1.7}
+.tip-card .tip-icon{font-size:14px;margin-right:4px}
+
+/* chart canvas */
+.chart-wrap{position:relative;height:160px;margin-bottom:8px}
+canvas{width:100%!important}
+
+/* loading */
+.loading{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px}
+
+/* bottom bar */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:8px 0;z-index:100;max-width:720px;margin:0 auto}
+.bb-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 16px;cursor:pointer;color:var(--muted);font-size:9px;transition:color .15s}
+.bb-item.on{color:var(--accent)}
+.bb-icon{font-size:20px}
+.spacer{height:64px}
+
+/* setup modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:720px;margin:0 auto;max-height:80vh;overflow-y:auto}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:16px}
+.form-row{margin-bottom:12px}
+.form-row label{font-size:11px;color:var(--muted);display:block;margin-bottom:4px}
+input,select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text);background:var(--bg);outline:none;font-family:inherit}
+input:focus{border-color:var(--accent)}
+.btn{padding:13px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:none;width:100%;margin-top:4px}
+.btn-primary{background:var(--grad);color:#fff}
+.btn-ghost{background:var(--bg);color:var(--muted);border:1px solid var(--border)}
+
+/* カレンダー */
+.cal-day{min-height:52px;background:var(--surface);border-radius:6px;padding:4px;cursor:pointer;transition:all .15s;border:1px solid transparent;position:relative}
+.cal-day:hover{border-color:var(--accent)}
+.cal-day.today{border-color:var(--accent);background:rgba(124,58,237,.08)}
+.cal-day.other-month{opacity:.3}
+.cal-day.has-post{background:var(--surface)}
+.cal-day-num{font-size:11px;color:var(--muted);margin-bottom:3px}
+.cal-day.today .cal-day-num{color:var(--accent);font-weight:700}
+.cal-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin:1px}
+.cal-post-count{position:absolute;top:3px;right:4px;font-size:9px;color:var(--accent);font-weight:700}
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-top">
+      <div class="hero-logo">WebSite Pro</div>
+      <div class="hero-period" id="heroPeriod">2026年9月</div>
+    </div>
+    <div class="hero-name" id="heroName">読み込み中...</div>
+    <div class="hero-handle" id="heroHandle">@---</div>
+    <div class="hero-kpis">
+      <div class="hero-kpi">
+        <div class="hero-kpi-val" id="kpiFollowers">--</div>
+        <div class="hero-kpi-label">フォロワー</div>
+      </div>
+      <div class="hero-kpi">
+        <div class="hero-kpi-val" id="kpiReach">--</div>
+        <div class="hero-kpi-label">月間リーチ</div>
+      </div>
+      <div class="hero-kpi">
+        <div class="hero-kpi-val" id="kpiPosts">--</div>
+        <div class="hero-kpi-label">今月の投稿</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Nav -->
+<div class="nav">
+  <div class="nav-item on" onclick="switchPage('summary')">📊 サマリー</div>
+  <div class="nav-item" onclick="switchPage('posts')">🏆 投稿実績</div>
+  <div class="nav-item" onclick="switchPage('schedule')">📅 スケジュール</div>
+  <div class="nav-item" onclick="switchPage('message')">💬 担当より</div>
+    <div class="nav-item" onclick="switchPage('calendar')">📆 カレンダー</div>
+</div>
+
+<!-- Pages -->
+<div id="page-summary" class="page on">
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-icon">❤️</div>
+      <div class="stat-label">合計いいね数</div>
+      <div class="stat-val" id="statLikes">--</div>
+      <div class="stat-change up" id="statLikesChange"></div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-icon">🔖</div>
+      <div class="stat-label">合計保存数</div>
+      <div class="stat-val" id="statSaved">--</div>
+      <div class="stat-change up" id="statSavedChange"></div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-icon">💬</div>
+      <div class="stat-label">合計コメント</div>
+      <div class="stat-val" id="statComments">--</div>
+      <div class="stat-change" id="statCommentsChange"></div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-icon">📡</div>
+      <div class="stat-label">平均リーチ/投稿</div>
+      <div class="stat-val" id="statAvgReach">--</div>
+      <div class="stat-change" id="statAvgChange"></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">📅 曜日別エンゲージメント <span class="sec-sub">いいね+コメントの平均</span></div>
+    <div class="bar-chart" id="dayChart"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">📈 コンテンツ別パフォーマンス</div>
+    <div class="bar-chart" id="typeChart"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">💡 今月のハイライト</div>
+    <div id="highlights"></div>
+  </div>
+</div>
+
+<div id="page-posts" class="page">
+  <div class="sec">
+    <div class="sec-title">🏆 リーチTOP5</div>
+    <div id="topPosts"></div>
+  </div>
+  <div class="sec">
+    <div class="sec-title">📋 全投稿一覧</div>
+    <div id="allPosts"></div>
+  </div>
+</div>
+
+<div id="page-schedule" class="page">
+  <div class="sec">
+    <div class="sec-title">📅 今後の投稿スケジュール</div>
+    <div id="scheduleList"></div>
+  </div>
+  <div class="sec">
+    <div class="sec-title">📊 今月の進捗</div>
+    <div id="progressBar"></div>
+  </div>
+</div>
+
+<div id="page-message" class="page">
+  <div class="sec">
+    <div class="sec-title">💬 担当者からのメッセージ</div>
+    <div id="messageArea"></div>
+  </div>
+  <div class="sec">
+    <div class="sec-title">💡 来月に向けたアドバイス</div>
+    <div id="tipsArea"></div>
+  </div>
+  <div class="sec">
+    <div class="sec-title">📞 お問い合わせ</div>
+    <div style="font-size:13px;color:var(--muted);line-height:2">
+      投稿内容の変更・追加はお気軽にご連絡ください。<br>
+      <strong style="color:var(--text)">担当：<span id="contactName">KO-SK</span></strong><br>
+      <a id="contactLine" href="#" style="color:var(--accent);text-decoration:none">📱 LINEで連絡する</a><br>
+      <a id="contactMail" href="#" style="color:var(--accent);text-decoration:none">📧 メールで連絡する</a>
+    </div>
+  </div>
+</div>
+
+<div class="spacer"></div>
+
+<!-- 設定ボタン -->
+<div style="position:fixed;top:16px;right:16px;z-index:50">
+  <button onclick="showSetup()" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.2);border:none;cursor:pointer;font-size:16px;color:#fff;backdrop-filter:blur(4px)">⚙️</button>
+</div>
+
+<!-- 設定モーダル -->
+<div class="modal-bg" id="setupModal" style="display:none" onclick="if(event.target===this)hideSetup()">
+  <div class="modal">
+    <div class="modal-title">⚙️ ダッシュボード設定</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.7">
+      クライアントに渡す前にここで設定してください。<br>設定はブラウザに保存されます。
+    </div>
+    <div class="form-row"><label>クライアント名</label><input id="cfg-name" placeholder="〇〇サロン"></div>
+    <div class="form-row"><label>Instagram @名</label><input id="cfg-handle" placeholder="sample_salon"></div>
+    <div class="form-row"><label>対象月</label><input type="month" id="cfg-month"></div>
+    <div class="form-row"><label>Instagram アクセストークン</label><input type="password" id="cfg-token" placeholder="IGQVJ..."></div>
+    <div class="form-row"><label>アカウントID</label><input id="cfg-igid" placeholder="17841xxxxxxxxxx"></div>
+    <div class="form-row"><label>担当者メッセージ（クライアントに表示）</label><textarea id="cfg-message" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:12px;height:80px;resize:vertical;background:var(--bg);font-family:inherit" placeholder="今月も素晴らしい成果が出ました！特に〇〇の投稿が..."></textarea></div>
+    <div class="form-row"><label>来月へのアドバイス（3つまで）</label>
+      <input id="cfg-tip1" placeholder="アドバイス①" style="margin-bottom:6px">
+      <input id="cfg-tip2" placeholder="アドバイス②" style="margin-bottom:6px">
+      <input id="cfg-tip3" placeholder="アドバイス③">
+    </div>
+    <div class="form-row"><label>LINE URL（任意）</label><input id="cfg-line" placeholder="https://line.me/..."></div>
+    <div class="form-row"><label>メールアドレス（任意）</label><input id="cfg-mail" placeholder="your@email.com"></div>
+    <button class="btn btn-primary" onclick="saveConfig()">💾 保存してデータ取得</button>
+    <button class="btn btn-ghost" onclick="loadDemo()" style="margin-top:8px">🎯 デモデータで確認</button>
+    <button class="btn btn-ghost" onclick="hideSetup()" style="margin-top:8px">閉じる</button>
+  </div>
+</div>
+
+<script>
+// ===== Config =====
+var cfg = {};
+var igData = null;
+
+function loadConfig(){
+  try{ cfg=JSON.parse(localStorage.getItem('dash_cfg')||'{}'); }catch(e){ cfg={}; }
+  if(cfg.name)  document.getElementById('cfg-name').value    = cfg.name;
+  if(cfg.handle)document.getElementById('cfg-handle').value  = cfg.handle;
+  if(cfg.month) document.getElementById('cfg-month').value   = cfg.month;
+  if(cfg.token) document.getElementById('cfg-token').value   = cfg.token;
+  if(cfg.igid)  document.getElementById('cfg-igid').value    = cfg.igid;
+  if(cfg.message)document.getElementById('cfg-message').value= cfg.message;
+  if(cfg.tip1)  document.getElementById('cfg-tip1').value    = cfg.tip1;
+  if(cfg.tip2)  document.getElementById('cfg-tip2').value    = cfg.tip2;
+  if(cfg.tip3)  document.getElementById('cfg-tip3').value    = cfg.tip3;
+  if(cfg.line)  document.getElementById('cfg-line').value    = cfg.line;
+  if(cfg.mail)  document.getElementById('cfg-mail').value    = cfg.mail;
+}
+
+function saveConfig(){
+  cfg = {
+    name:    document.getElementById('cfg-name').value.trim(),
+    handle:  document.getElementById('cfg-handle').value.trim(),
+    month:   document.getElementById('cfg-month').value,
+    token:   document.getElementById('cfg-token').value.trim(),
+    igid:    document.getElementById('cfg-igid').value.trim(),
+    message: document.getElementById('cfg-message').value.trim(),
+    tip1:    document.getElementById('cfg-tip1').value.trim(),
+    tip2:    document.getElementById('cfg-tip2').value.trim(),
+    tip3:    document.getElementById('cfg-tip3').value.trim(),
+    line:    document.getElementById('cfg-line').value.trim(),
+    mail:    document.getElementById('cfg-mail').value.trim(),
+  };
+  try{ localStorage.setItem('dash_cfg', JSON.stringify(cfg)); }catch(e){}
+  hideSetup();
+  if(cfg.token && cfg.igid){ fetchData(); }else{ loadDemo(); }
+}
+
+function showSetup(){ loadConfig(); document.getElementById('setupModal').style.display='flex'; }
+function hideSetup(){ document.getElementById('setupModal').style.display='none'; }
+
+// ===== Navigation =====
+function switchPage(id){
+  document.querySelectorAll('.page').forEach(function(el){ el.classList.remove('on'); });
+  document.querySelectorAll('.nav-item').forEach(function(el){ el.classList.remove('on'); });
+  document.getElementById('page-'+id).classList.add('on');
+  event.target.classList.add('on');
+}
+
+// ===== API Fetch =====
+async function fetchData(){
+  if(!cfg.token||!cfg.igid){ loadDemo(); return; }
+  try{
+    var base = 'https://graph.instagram.com/';
+    var tok  = '?access_token='+cfg.token;
+    var profile = await fetch(base+cfg.igid+tok+'&fields=username,followers_count,follows_count,media_count').then(function(r){return r.json();});
+    var media   = await fetch(base+cfg.igid+'/media'+tok+'&fields=id,caption,media_type,media_url,thumbnail_url,timestamp,like_count,comments_count&limit=25').then(function(r){return r.json();});
+    var posts = media.data || [];
+    for(var i=0;i<posts.length;i++){
+      try{
+        var ins = await fetch(base+posts[i].id+'/insights'+tok+'&metric=reach,impressions,saved').then(function(r){return r.json();});
+        posts[i].insights={};
+        (ins.data||[]).forEach(function(m){ posts[i].insights[m.name]=m.values[0].value; });
+      }catch(e){ posts[i].insights={reach:0,impressions:0,saved:0}; }
+    }
+    igData = { profile:profile, posts:posts };
+    renderAll(igData);
+  }catch(e){
+    console.log('API error:',e);
+    loadDemo();
+  }
+}
+
+// ===== Render =====
+function fmt(n){ return n?n.toLocaleString():'0'; }
+function fmtDate(ts){ return new Date(ts).toLocaleDateString('ja-JP',{month:'short',day:'numeric'}); }
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function renderAll(data){
+  var posts   = data.posts||[];
+  var profile = data.profile||{};
+  var name    = cfg.name||profile.username||'クライアント';
+  var handle  = cfg.handle||profile.username||'---';
+  var month   = cfg.month||(new Date().toISOString().slice(0,7));
+  var monthLabel = month.replace('-','年')+'月';
+
+  // Hero
+  document.getElementById('heroName').textContent   = name;
+  document.getElementById('heroHandle').textContent = '@'+handle;
+  document.getElementById('heroPeriod').textContent = monthLabel;
+  document.getElementById('kpiFollowers').textContent= fmt(profile.followers_count);
+  var totalReach = posts.reduce(function(s,p){return s+(p.insights&&p.insights.reach||0);},0);
+  document.getElementById('kpiReach').textContent    = totalReach>1000?(Math.round(totalReach/100)/10)+'k':fmt(totalReach);
+  document.getElementById('kpiPosts').textContent    = posts.length+'件';
+
+  // Summary stats
+  var totalLikes = posts.reduce(function(s,p){return s+(p.like_count||0);},0);
+  var totalSaved = posts.reduce(function(s,p){return s+(p.insights&&p.insights.saved||0);},0);
+  var totalCmts  = posts.reduce(function(s,p){return s+(p.comments_count||0);},0);
+  var avgReach   = posts.length?Math.round(totalReach/posts.length):0;
+  document.getElementById('statLikes').textContent    = fmt(totalLikes);
+  document.getElementById('statSaved').textContent    = fmt(totalSaved);
+  document.getElementById('statComments').textContent = fmt(totalCmts);
+  document.getElementById('statAvgReach').textContent = fmt(avgReach);
+
+  // Day chart
+  var dayEng=[0,0,0,0,0,0,0], dayCnt=[0,0,0,0,0,0,0];
+  posts.forEach(function(p){
+    var d=new Date(p.timestamp).getDay();
+    dayEng[d]+=(p.like_count||0)+(p.comments_count||0);
+    dayCnt[d]++;
+  });
+  var dayAvg=dayEng.map(function(v,i){return dayCnt[i]?Math.round(v/dayCnt[i]):0;});
+  var maxDay=Math.max.apply(null,dayAvg)||1;
+  var dayNames=['日','月','火','水','木','金','土'];
+  document.getElementById('dayChart').innerHTML=dayAvg.map(function(v,i){
+    return '<div class="bar-row"><div class="bar-label">'+dayNames[i]+'</div><div class="bar-wrap"><div class="bar-fill" style="width:'+Math.round(v/maxDay*100)+'%"></div></div><div class="bar-val">'+v+'</div></div>';
+  }).join('');
+
+  // Type chart
+  var typeMap={IMAGE:'📷 写真',VIDEO:'🎬 動画',CAROUSEL_ALBUM:'📚 カルーセル'};
+  var typeEng={},typeCnt={};
+  posts.forEach(function(p){
+    var t=typeMap[p.media_type]||p.media_type||'その他';
+    typeEng[t]=(typeEng[t]||0)+(p.like_count||0)+(p.comments_count||0);
+    typeCnt[t]=(typeCnt[t]||0)+1;
+  });
+  var typeAvg=Object.keys(typeEng).map(function(t){return {t:t,v:typeCnt[t]?Math.round(typeEng[t]/typeCnt[t]):0};});
+  typeAvg.sort(function(a,b){return b.v-a.v;});
+  var maxType=typeAvg[0]?typeAvg[0].v:1;
+  document.getElementById('typeChart').innerHTML=typeAvg.map(function(item){
+    return '<div class="bar-row"><div class="bar-label" style="width:80px;white-space:nowrap">'+item.t+'</div><div class="bar-wrap"><div class="bar-fill" style="width:'+Math.round(item.v/maxType*100)+'%"></div></div><div class="bar-val">'+item.v+'</div></div>';
+  }).join('');
+
+  // Highlights
+  var byReach=posts.slice().sort(function(a,b){return(b.insights&&b.insights.reach||0)-(a.insights&&a.insights.reach||0);});
+  var highlights=[];
+  if(byReach[0]) highlights.push('最もリーチした投稿: <strong>'+fmtDate(byReach[0].timestamp)+'</strong> ('+fmt(byReach[0].insights&&byReach[0].insights.reach||0)+'リーチ)');
+  var bestDay=dayNames[dayAvg.indexOf(Math.max.apply(null,dayAvg))];
+  if(bestDay) highlights.push('エンゲージメントが最も高い曜日: <strong>'+bestDay+'曜日</strong>');
+  var bestType=typeAvg[0]?typeAvg[0].t:'';
+  if(bestType) highlights.push('最もエンゲージメントが高いコンテンツ: <strong>'+bestType+'</strong>');
+  document.getElementById('highlights').innerHTML=highlights.map(function(h){
+    return '<div class="tip-card"><span class="tip-icon">✨</span>'+h+'</div>';
+  }).join('');
+
+  // Top posts
+  var topHtml=byReach.slice(0,5).map(function(p,i){
+    var badge=['r1','r2','r3','rn','rn'][i];
+    var cap=(p.caption||'（キャプションなし）').slice(0,60);
+    return '<div class="post-card">'+
+      '<div class="rank-circle '+badge+'">'+(i+1)+'</div>'+
+      '<div class="post-thumb">'+(p.thumbnail_url||p.media_url?'<img src="'+(p.thumbnail_url||p.media_url)+'" onerror="this.style.display=\'none\'">':'📷')+'</div>'+
+      '<div class="post-info">'+
+      '<div class="post-date">'+fmtDate(p.timestamp)+'</div>'+
+      '<div class="post-caption">'+esc(cap)+'</div>'+
+      '<div class="post-stats">'+
+      '<div class="post-stat">📡 '+fmt(p.insights&&p.insights.reach||0)+'</div>'+
+      '<div class="post-stat">❤️ '+fmt(p.like_count||0)+'</div>'+
+      '<div class="post-stat">🔖 '+fmt(p.insights&&p.insights.saved||0)+'</div>'+
+      '</div></div></div>';
+  }).join('');
+  document.getElementById('topPosts').innerHTML=topHtml||'<div style="color:var(--muted);font-size:12px;padding:20px 0;text-align:center">データがありません</div>';
+
+  // All posts
+  var allHtml=posts.map(function(p){
+    var cap=(p.caption||'（キャプションなし）').slice(0,50);
+    return '<div class="post-card">'+
+      '<div class="post-thumb">'+(p.thumbnail_url||p.media_url?'<img src="'+(p.thumbnail_url||p.media_url)+'" onerror="this.style.display=\'none\'">':'📷')+'</div>'+
+      '<div class="post-info">'+
+      '<div class="post-date">'+fmtDate(p.timestamp)+' · '+(typeMap[p.media_type]||p.media_type||'')+'</div>'+
+      '<div class="post-caption">'+esc(cap)+'</div>'+
+      '<div class="post-stats">'+
+      '<div class="post-stat">📡 '+fmt(p.insights&&p.insights.reach||0)+'</div>'+
+      '<div class="post-stat">❤️ '+fmt(p.like_count||0)+'</div>'+
+      '<div class="post-stat">💬 '+fmt(p.comments_count||0)+'</div>'+
+      '<div class="post-stat">🔖 '+fmt(p.insights&&p.insights.saved||0)+'</div>'+
+      '</div></div></div>';
+  }).join('');
+  document.getElementById('allPosts').innerHTML=allHtml||'<div style="color:var(--muted);font-size:12px;padding:20px 0;text-align:center">データがありません</div>';
+
+  // Schedule（デモ or 将来GAS連携）
+  var schedItems=cfg.schedItems||demoSchedule();
+  var schedHtml=schedItems.map(function(s){
+    var statusCls=s.status==='承認済み'?'s-approved':s.status==='承認待ち'?'s-pending':'s-draft';
+    return '<div class="sched-item">'+
+      '<div class="sched-date">'+s.date+'</div>'+
+      '<div class="sched-status '+statusCls+'">'+s.status+'</div>'+
+      '<div class="sched-cap">'+esc(s.caption)+'</div>'+
+      '</div>';
+  }).join('');
+  document.getElementById('scheduleList').innerHTML=schedHtml;
+
+  // Progress
+  var approved=schedItems.filter(function(s){return s.status==='承認済み';}).length;
+  var total=schedItems.length;
+  var pct=total?Math.round(approved/total*100):0;
+  document.getElementById('progressBar').innerHTML=
+    '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px"><span>承認済み <strong>'+approved+'</strong> / 全'+total+'件</span><span style="color:var(--green)">'+pct+'%</span></div>'+
+    '<div style="background:var(--bg);border-radius:6px;height:12px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:var(--grad);border-radius:6px;transition:width 1s ease"></div></div>';
+
+  // Message
+  var msg=cfg.message||'今月もお疲れさまでした！\n投稿へのエンゲージメントが先月と比べて向上しています。特に保存数が増えているのは、お客様にとって価値のある情報が届いている証拠です。\n引き続き一緒に頑張りましょう！';
+  document.getElementById('messageArea').innerHTML=
+    '<div class="msg-from">WebSite Pro 担当より</div>'+
+    '<div class="msg-bubble">'+msg.replace(/\n/g,'<br>')+'</div>';
+
+  // Tips
+  var tips=[cfg.tip1||'リールを週2本以上投稿するとリーチが大幅に増えます',cfg.tip2||'ストーリーズで「Q&A」機能を使うとエンゲージメントが向上します',cfg.tip3||'投稿時間を木〜金の夕方18〜20時に集中させると効果的です'];
+  document.getElementById('tipsArea').innerHTML=tips.filter(Boolean).map(function(t){
+    return '<div class="tip-card"><span class="tip-icon">💡</span>'+esc(t)+'</div>';
+  }).join('');
+
+  // Contact
+  if(cfg.line) document.getElementById('contactLine').href='line://ti/p/'+cfg.line.replace('https://line.me/ti/p/','');
+  if(cfg.mail) document.getElementById('contactMail').href='mailto:'+cfg.mail;
+}
+
+function demoSchedule(){
+  var now=new Date();
+  var items=[];
+  var statuses=['承認済み','承認済み','承認待ち','下書き','下書き'];
+  var caps=['春の新メニュー♪ カットコース特集をお届け','スタッフ紹介 〇〇スタイリストの得意なスタイルは…','ビフォーアフター公開！イメチェン大成功✨','カラーリング特集（準備中）','リール動画投稿予定'];
+  for(var i=0;i<5;i++){
+    var d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+i*4+1);
+    items.push({date:(d.getMonth()+1)+'/'+d.getDate()+'('+['日','月','火','水','木','金','土'][d.getDay()]+')',status:statuses[i],caption:caps[i]});
+  }
+  return items;
+}
+
+// ===== Demo Data =====
+function loadDemo(){
+  var posts=Array.from({length:16},function(_,i){
+    var types=['IMAGE','VIDEO','CAROUSEL_ALBUM'];
+    var d=new Date();
+    d.setDate(d.getDate()-i*2);
+    return {
+      id:'p'+i,
+      caption:'サンプル投稿です。今日も素敵なスタイルをご紹介します✨ ご予約はプロフィールのリンクから！ #美容室 #ヘアカラー',
+      media_type:types[i%3],
+      timestamp:d.toISOString(),
+      like_count:Math.floor(Math.random()*180+30),
+      comments_count:Math.floor(Math.random()*15),
+      insights:{reach:Math.floor(Math.random()*800+100),impressions:Math.floor(Math.random()*1200+200),saved:Math.floor(Math.random()*40+5)}
+    };
+  });
+  igData={
+    profile:{username:'sample_salon',followers_count:1842,follows_count:320,media_count:87},
+    posts:posts
+  };
+  if(!cfg.name) cfg.name='サンプルサロン';
+  if(!cfg.handle) cfg.handle='sample_salon';
+  if(!cfg.month) cfg.month=new Date().toISOString().slice(0,7);
+  renderAll(igData);
+  hideSetup();
+}
+
+// ===== Init =====
+(function(){
+  try{ cfg=JSON.parse(localStorage.getItem('dash_cfg')||'{}'); }catch(e){ cfg={}; }
+  var now=new Date();
+  document.getElementById('cfg-month').value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  if(cfg.token&&cfg.igid){ fetchData(); }else{ loadDemo(); }
+})();
+
+// ===== CALENDAR =====
+var calYear, calMonth;
+
+function initCalendar(){
+  var now = new Date();
+  calYear = now.getFullYear();
+  calMonth = now.getMonth();
+  renderCalendar();
+}
+
+function prevMonth(){
+  calMonth--;
+  if(calMonth < 0){ calMonth = 11; calYear--; }
+  renderCalendar();
+}
+
+function nextMonth(){
+  calMonth++;
+  if(calMonth > 11){ calMonth = 0; calYear++; }
+  renderCalendar();
+}
+
+function renderCalendar(){
+  var label = calYear+'年'+(calMonth+1)+'月';
+  document.getElementById('calMonthLabel').textContent = label;
+
+  var grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+
+  var first = new Date(calYear, calMonth, 1);
+  var last = new Date(calYear, calMonth+1, 0);
+  var startDay = first.getDay();
+  var today = new Date();
+
+  // 投稿データを取得
+  var posts = getCalendarPosts();
+  var thisMonthStr = calYear+'-'+String(calMonth+1).padStart(2,'0');
+
+  // 月のサマリー集計
+  var approved=0, pending=0, draft=0;
+  posts.forEach(function(p){
+    if(!(p.date||'').startsWith(thisMonthStr)) return;
+    if(p.status==='承認済み') approved++;
+    else if(p.status==='承認待ち') pending++;
+    else draft++;
+  });
+  document.getElementById('calApproved').textContent = approved;
+  document.getElementById('calPending').textContent = pending;
+  document.getElementById('calDraft').textContent = draft;
+
+  // 前月の空白
+  for(var i=0; i<startDay; i++){
+    var prev = new Date(calYear, calMonth, -startDay+i+1);
+    var el = document.createElement('div');
+    el.className = 'cal-day other-month';
+    el.innerHTML = '<div class="cal-day-num">'+(prev.getDate())+'</div>';
+    grid.appendChild(el);
+  }
+
+  // 当月
+  for(var d=1; d<=last.getDate(); d++){
+    var dateStr = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var dayPosts = posts.filter(function(p){ return (p.date||'').startsWith(dateStr); });
+    var isToday = today.getFullYear()===calYear && today.getMonth()===calMonth && today.getDate()===d;
+
+    var el = document.createElement('div');
+    el.className = 'cal-day'+(isToday?' today':'')+(dayPosts.length?' has-post':'');
+    el.onclick = (function(ds, dp){ return function(){ showCalDetail(ds, dp); }; })(dateStr, dayPosts);
+
+    var dots = dayPosts.map(function(p){
+      var col = p.status==='承認済み'?'#16a34a':p.status==='承認待ち'?'#f59e0b':p.type==='リール動画'?'#e1306c':'#6b7280';
+      return '<span class="cal-dot" style="background:'+col+'"></span>';
+    }).join('');
+
+    el.innerHTML = '<div class="cal-day-num">'+d+'</div>'+dots+
+      (dayPosts.length>1?'<div class="cal-post-count">'+dayPosts.length+'</div>':'');
+    grid.appendChild(el);
+  }
+
+  // 次月の空白
+  var remaining = 7 - ((startDay + last.getDate()) % 7);
+  if(remaining < 7){
+    for(var j=1; j<=remaining; j++){
+      var el2 = document.createElement('div');
+      el2.className = 'cal-day other-month';
+      el2.innerHTML = '<div class="cal-day-num">'+j+'</div>';
+      grid.appendChild(el2);
+    }
+  }
+}
+
+function showCalDetail(dateStr, posts){
+  var sec = document.getElementById('calDetailSec');
+  var title = document.getElementById('calDetailTitle');
+  var body = document.getElementById('calDetailBody');
+  var parts = dateStr.split('-');
+  title.textContent = parts[1]+'月'+parseInt(parts[2])+'日の投稿';
+  if(!posts.length){
+    body.innerHTML = '<div style="text-align:center;padding:16px;color:var(--muted);font-size:13px">この日の投稿はありません</div>';
+  } else {
+    body.innerHTML = posts.map(function(p){
+      var col = p.status==='承認済み'?'#16a34a':p.status==='承認待ち'?'#f59e0b':'#6b7280';
+      return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:12px;margin-bottom:8px">'+
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'+
+        '<span style="font-size:11px;font-weight:700;color:var(--text)">'+(p.type||'投稿')+'</span>'+
+        '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;background:rgba(0,0,0,.2);color:'+col+'">'+p.status+'</span>'+
+        '</div>'+
+        '<div style="font-size:12px;color:var(--muted);line-height:1.6">'+(p.caption||'').slice(0,80)+(p.caption&&p.caption.length>80?'...':'')+'</div>'+
+        '</div>';
+    }).join('');
+  }
+  sec.style.display = '';
+  sec.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function getCalendarPosts(){
+  // window.scheduleData から取得（fetchDataで設定）
+  if(window.scheduleData && window.scheduleData.length){
+    return window.scheduleData.map(function(item){
+      return {
+        date: item.date || '',
+        status: item.status || '下書き',
+        type: item.type || 'フィード',
+        caption: item.caption || ''
+      };
+    });
+  }
+  // デモデータ
+  var now = new Date();
+  var posts = [];
+  var statuses = ['承認済み','承認済み','承認待ち','下書き','下書き','承認済み'];
+  var types = ['フィード写真','リール動画','フィード写真','カルーセル','リール動画','フィード写真'];
+  var caps = ['春の新メニュー♪ カットコース特集','スタッフ紹介動画','ビフォーアフター公開！','カラーリング特集','新作リール予定','週末限定キャンペーン'];
+  for(var i=0; i<6; i++){
+    var d = new Date(now.getFullYear(), now.getMonth(), i*5+1);
+    var ds = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    posts.push({date:ds, status:statuses[i], type:types[i], caption:caps[i]});
+  }
+  return posts;
+}
+
+// switchPage拡張：カレンダーページを開いたときに初期化
+var _origSwitchPage = switchPage;
+function switchPage(id){
+  _origSwitchPage.call(this, id);
+  if(id === 'calendar') initCalendar();
+}
+</script>
+</body>
+</html>

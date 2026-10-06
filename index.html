@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WEBLINO | HP制作 素材フォーム</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--surface:#13131a;--surface2:#1a1a26;--border:#2a2a3a;
+  --accent:#7c3aed;--gold:#c4943a;--text:#f0f0f5;--muted:#8888a8;
+}
+body{background:var(--bg);color:var(--text);font-family:'Hiragino Sans','Meiryo',sans-serif;min-height:100vh}
+.wrap{max-width:600px;margin:0 auto;padding:24px 16px 80px}
+
+/* ヘッダー */
+.header{background:linear-gradient(135deg,#3b0764,#1e0a3a);border:1px solid var(--accent);border-radius:20px;padding:28px 24px;margin-bottom:24px;text-align:center}
+.header-logo{font-size:11px;letter-spacing:.2em;color:var(--gold);font-weight:700;margin-bottom:8px}
+.header h1{font-size:22px;font-weight:800;margin-bottom:6px}
+.header p{font-size:12px;color:rgba(255,255,255,.65);line-height:1.7}
+.header-email{margin-top:12px;background:rgba(255,255,255,.1);border-radius:10px;padding:10px 16px;font-size:12px}
+.header-email a{color:var(--gold);font-weight:700;text-decoration:none}
+
+/* 管理者 */
+.admin-toggle{text-align:center;margin-bottom:16px}
+.admin-toggle button{background:none;border:1px solid var(--border);color:var(--muted);font-size:11px;padding:6px 16px;border-radius:20px;cursor:pointer;font-family:inherit}
+.admin-panel{background:var(--surface);border:1px solid var(--gold);border-radius:16px;padding:20px;margin-bottom:20px;display:none}
+.admin-panel h3{font-size:13px;color:var(--gold);font-weight:700;margin-bottom:14px}
+.admin-row{display:flex;gap:10px}
+.admin-row input{flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:12px;color:var(--text);background:var(--surface2);outline:none;font-family:inherit}
+.admin-row button{padding:10px 16px;background:var(--accent);color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:12px;font-family:inherit;white-space:nowrap}
+
+/* カード */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:14px}
+.card-title{font-size:13px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.field{margin-bottom:14px}
+.field label{font-size:11px;color:var(--muted);display:block;margin-bottom:5px;font-weight:600;letter-spacing:.04em}
+.req{color:var(--accent);margin-left:3px}
+input[type=text],input[type=email],input[type=tel],input[type=url],select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;color:var(--text);background:var(--surface2);outline:none;font-family:inherit;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:90px;line-height:1.6}
+input::placeholder,textarea::placeholder{color:var(--muted);font-size:12px}
+select option{background:var(--surface2)}
+
+/* プラン */
+.plan-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:4px}
+.plan-card{background:var(--surface2);border:2px solid var(--border);border-radius:14px;padding:14px 10px;cursor:pointer;text-align:center;display:block;transition:all .2s}
+.plan-card:hover,.plan-card:active{border-color:var(--accent)}
+.plan-card.active{border-color:var(--accent);background:rgba(124,58,237,.15)}
+.plan-name{font-size:13px;font-weight:700;margin-bottom:4px}
+.plan-price{font-size:11px;color:var(--gold);font-weight:600}
+.plan-badge{font-size:9px;background:var(--accent);color:#fff;padding:2px 7px;border-radius:10px;display:inline-block;margin-bottom:6px}
+
+/* チップ */
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
+.chip{padding:6px 13px;border-radius:20px;font-size:12px;cursor:pointer;border:1.5px solid var(--border);background:var(--surface2);color:var(--muted);transition:all .15s;user-select:none;display:inline-block}
+.chip.on{background:rgba(124,58,237,.2);border-color:var(--accent);color:var(--text)}
+
+/* ドライブ */
+.drive-box{background:var(--surface2);border:2px dashed var(--border);border-radius:12px;padding:18px;text-align:center;margin-bottom:14px}
+.drive-icon{font-size:32px;margin-bottom:8px}
+.drive-label{font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.6}
+.steps{background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);border-radius:12px;padding:14px;margin-bottom:14px}
+.steps-title{font-size:11px;color:var(--gold);font-weight:700;margin-bottom:10px}
+.step-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;font-size:12px;color:rgba(255,255,255,.75);line-height:1.6}
+.step-num{background:var(--accent);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px}
+
+/* ページ選択 */
+.page-chips{display:flex;flex-wrap:wrap;gap:8px}
+.page-chip{padding:8px 14px;border-radius:10px;font-size:12px;cursor:pointer;border:1.5px solid var(--border);background:var(--surface2);color:var(--muted);transition:all .2s;user-select:none;position:relative}
+.page-chip.on{background:rgba(124,58,237,.2);border-color:var(--accent);color:var(--text)}
+.page-chip .check{display:none;position:absolute;top:-6px;right:-6px;background:var(--accent);color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;align-items:center;justify-content:center;font-weight:700}
+.page-chip.on .check{display:flex}
+.page-form-card{background:var(--surface2);border:1px solid var(--accent);border-radius:14px;padding:18px;margin-bottom:14px}
+.page-form-title{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+/* 送信 */
+.btn-submit{width:100%;padding:16px;border-radius:14px;background:linear-gradient(135deg,var(--accent),#4f46e5);color:#fff;font-size:15px;font-weight:700;border:none;cursor:pointer;margin-top:8px;font-family:inherit}
+.btn-submit:disabled{opacity:.45;cursor:default}
+
+/* 成功 */
+.success-wrap{text-align:center;padding:60px 20px;display:none}
+.success-wrap.show{display:block}
+.success-icon{font-size:64px;margin-bottom:16px}
+.success-wrap h2{font-size:20px;font-weight:700;margin-bottom:8px}
+.success-wrap p{font-size:13px;color:var(--muted);line-height:1.8}
+
+@media(max-width:480px){.plan-cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="admin-toggle">
+  <button onclick="toggleAdmin()">⚙ 管理者設定</button>
+</div>
+<div class="admin-panel" id="adminPanel">
+  <h3>🔧 送信設定</h3>
+  <div class="admin-row">
+    <input type="url" id="cfgWebhook" placeholder="https://script.google.com/macros/s/...">
+    <button onclick="saveCfg()">保存</button>
+  </div>
+</div>
+
+<div class="header">
+  <div class="header-logo">W E B L I N O</div>
+  <h1>HP制作 素材フォーム</h1>
+  <p>ホームページ制作に必要な情報・素材をご提供ください。<br>写真・動画はGoogleドライブ共有URLで送っていただきます。</p>
+  <div class="header-email">📧 お問い合わせ：<a href="mailto:weblino.jpn@gmail.com">weblino.jpn@gmail.com</a></div>
+</div>
+
+<!-- 送信完了画面 -->
+<div class="success-wrap" id="successWrap">
+  <div class="success-icon">✅</div>
+  <h2>送信完了しました！</h2>
+  <p>素材フォームのご提出ありがとうございます。<br>担当者が内容を確認し、3営業日以内にご連絡いたします。</p>
+</div>
+
+<!-- フォーム本体 -->
+<div id="formWrap">
+
+  <!-- プラン選択 -->
+  <div class="card">
+    <div class="card-title">📦 ご契約プランを選択<span style="color:var(--accent)">*</span></div>
+    <div class="plan-cards">
+      <div class="plan-card" id="pc-light" onclick="selectPlan('light')">
+        <div class="plan-name">ライトプラン</div>
+        <div class="plan-price">¥8,000/月</div>
+      </div>
+      <div class="plan-card" id="pc-standard" onclick="selectPlan('standard')">
+        <div class="plan-badge">人気No.1</div>
+        <div class="plan-name">スタンダード</div>
+        <div class="plan-price">¥15,000/月</div>
+      </div>
+      <div class="plan-card" id="pc-premium" onclick="selectPlan('premium')">
+        <div class="plan-badge">チャットボット付き</div>
+        <div class="plan-name">プレミアム</div>
+        <div class="plan-price">¥30,000/月</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 以下はプラン選択後に表示 -->
+  <div id="formBody" style="display:none">
+
+    <!-- 基本情報 -->
+    <div class="card">
+      <div class="card-title">🏪 基本情報</div>
+      <div class="field"><label>店舗名・屋号<span class="req">*</span></label><input type="text" id="shopName" placeholder="例：カフェ ブルーム"></div>
+      <div class="field"><label>業種<span class="req">*</span></label>
+        <select id="industry">
+          <option value="">選択してください</option>
+          <option>カフェ・コーヒーショップ</option><option>飲食店（和食）</option><option>飲食店（洋食・イタリアン）</option><option>飲食店（その他）</option>
+          <option>美容室・ヘアサロン</option><option>エステ・脱毛サロン</option><option>ネイルサロン</option><option>アイサロン</option>
+          <option>整骨院・整体院</option><option>整体・リラクゼーション</option><option>ヨガ・ピラティス</option><option>パーソナルジム</option>
+          <option>不動産・工務店</option><option>コーポレート・企業</option><option>その他</option>
+        </select>
+      </div>
+      <div class="field"><label>担当者名<span class="req">*</span></label><input type="text" id="contactName" placeholder="例：田中 太郎"></div>
+      <div class="field"><label>メールアドレス<span class="req">*</span></label><input type="email" id="contactEmail" placeholder="example@gmail.com"></div>
+      <div class="field"><label>電話番号（担当者）</label><input type="tel" id="contactTel" placeholder="090-0000-0000"></div>
+      <div class="field"><label>HP掲載用電話番号</label><input type="tel" id="publicTel" placeholder="HP上に表示する電話番号"></div>
+      <div class="field"><label>住所・アクセス</label><textarea id="address" rows="3" placeholder="例：福岡県福岡市中央区天神1-1-1&#10;地下鉄天神駅から徒歩3分"></textarea></div>
+      <div class="field"><label>営業時間・定休日</label><input type="text" id="hours" placeholder="例：11:00〜22:00（月曜定休）"></div>
+      <div class="field"><label>SNSアカウント</label><input type="text" id="sns" placeholder="例：@bluem_cafe"></div>
+      <div class="field"><label>問い合わせ転送先メール<span class="req">*</span></label><input type="email" id="formEmail" placeholder="お客様からの問い合わせを受け取るメールアドレス"></div>
+    </div>
+
+    <!-- デザイン -->
+    <div class="card">
+      <div class="card-title">✨ デザイン・コンセプト</div>
+      <div class="field"><label>キャッチコピー</label><input type="text" id="catchcopy" placeholder="例：素材を活かす、一番のこだわり。"></div>
+      <div class="field">
+        <label>雰囲気・世界観</label>
+        <div class="chips" id="chipsMood">
+          <div class="chip" onclick="toggleChip(this)">高級感・上品</div>
+          <div class="chip" onclick="toggleChip(this)">ナチュラル・温かみ</div>
+          <div class="chip" onclick="toggleChip(this)">スタイリッシュ・モダン</div>
+          <div class="chip" onclick="toggleChip(this)">かわいい・ポップ</div>
+          <div class="chip" onclick="toggleChip(this)">和風・落ち着き</div>
+          <div class="chip" onclick="toggleChip(this)">清潔感・信頼感</div>
+          <div class="chip" onclick="toggleChip(this)">活気・エネルギッシュ</div>
+          <div class="chip" onclick="toggleChip(this)">シンプル・ミニマル</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>希望カラーイメージ</label>
+        <div class="chips" id="chipsColor">
+          <div class="chip" onclick="toggleChip(this)">ブラック・ゴールド</div>
+          <div class="chip" onclick="toggleChip(this)">ホワイト・ベージュ</div>
+          <div class="chip" onclick="toggleChip(this)">グリーン系</div>
+          <div class="chip" onclick="toggleChip(this)">ブルー系</div>
+          <div class="chip" onclick="toggleChip(this)">ピンク・パープル</div>
+          <div class="chip" onclick="toggleChip(this)">ブラウン・ウッド</div>
+          <div class="chip" onclick="toggleChip(this)">おまかせ</div>
+        </div>
+      </div>
+      <div class="field"><label>参考にしたいHPのURL</label><textarea id="refUrls" rows="2" placeholder="https://..."></textarea></div>
+      <div class="field"><label>強み・他店との違い</label><textarea id="strength" rows="4" placeholder="例：創業20年のこだわりの出汁、完全個室あり..."></textarea></div>
+    </div>
+
+    <!-- メニュー -->
+    <div class="card">
+      <div class="card-title">📋 メニュー・料金表</div>
+      <div class="field"><label>メニュー・料金一覧</label><textarea id="menuList" rows="8" placeholder="例：&#10;・ドリップコーヒー ¥480&#10;・カフェラテ ¥580&#10;・本日のケーキ ¥480"></textarea></div>
+      <div class="field"><label>料金補足・注意書き</label><input type="text" id="menuNote" placeholder="例：税込表示・サービス料10%別途"></div>
+    </div>
+
+    <!-- 素材 -->
+    <div class="card">
+      <div class="card-title">📁 写真・素材（Googleドライブ）</div>
+      <div class="steps">
+        <div class="steps-title">📌 素材の送り方</div>
+        <div class="step-item"><div class="step-num">1</div><div>担当者からお送りした<strong style="color:var(--gold)">Googleドライブの共有フォルダ</strong>を開く</div></div>
+        <div class="step-item"><div class="step-num">2</div><div>写真・動画・ロゴなどをアップロードする</div></div>
+        <div class="step-item"><div class="step-num">3</div><div>フォルダの<strong style="color:var(--gold)">共有リンクをコピー</strong>して下に貼り付ける</div></div>
+      </div>
+      <div class="drive-box">
+        <div class="drive-icon">🔗</div>
+        <div class="drive-label">GoogleドライブのフォルダURLを貼り付けてください</div>
+        <input type="url" id="driveUrl" placeholder="https://drive.google.com/drive/folders/...">
+      </div>
+      <div id="photoGuide" style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.8"></div>
+      <div class="field" style="margin-top:14px"><label>ロゴデータ</label>
+        <select id="hasLogo">
+          <option>あり（ドライブに入れました）</option>
+          <option>なし（作成をお任せします）</option>
+          <option>未定</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ライト専用 -->
+    <div class="card" id="secLight" style="display:none">
+      <div class="card-title">📄 メインページの内容</div>
+      <div class="field"><label>掲載したい内容・構成<span class="req">*</span></label><textarea id="lightMain" rows="6" placeholder="例：&#10;・お店の雰囲気写真を大きく見せたい&#10;・メニューと価格を載せたい&#10;・アクセスと地図を入れたい"></textarea></div>
+      <div class="field"><label>その他ご要望</label><textarea id="lightNote" rows="3"></textarea></div>
+    </div>
+
+    <!-- スタンダード・プレミアム：ページ選択 -->
+    <div class="card" id="secPageSelect" style="display:none">
+      <div class="card-title">📑 作成するページを選択</div>
+      <div style="font-size:11px;color:var(--gold);margin-bottom:12px" id="pageLimitText"></div>
+      <div class="page-chips" id="pageChips"></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px">選択中：<span id="pageCount">1</span>ページ</div>
+    </div>
+
+    <!-- ページ別フォーム -->
+    <div id="pageForms"></div>
+
+    <!-- プレミアム追加 -->
+    <div class="card" id="secPremium" style="display:none">
+      <div class="card-title">🤖 チャットボット・GA設定</div>
+      <div class="field"><label>チャットボットQ&A（3〜5件）</label><textarea id="preChatbot" rows="8" placeholder="Q：予約は必要ですか？&#10;A：はい、お電話でご予約ください。"></textarea></div>
+      <div class="field"><label>Googleアナリティクス用メールアドレス</label><input type="email" id="preGaEmail" placeholder="Googleアカウントのメールアドレス"></div>
+      <div class="field"><label>動画素材のDriveリンク</label><input type="url" id="preVideoUrl" placeholder="https://drive.google.com/..."></div>
+    </div>
+
+    <button class="btn-submit" id="btnSubmit" onclick="submitForm()">送信する →</button>
+
+  </div><!-- /formBody -->
+</div><!-- /formWrap -->
+
+</div><!-- /wrap -->
+<script>
+var currentPlan = '';
+var selectedPages = [];
+var webhookUrl = localStorage.getItem('wb_webhook') || 'https://script.google.com/macros/s/AKfycbzcy_iGr9HBYFJ1qBaLsclTnGRHAhXvx4iZrH61bOsgsRzm2h1AWqi7SAoCRktVN5kA/exec';
+
+// 管理者
+var adminPw = '8d97d987c744d3d1744dfeaca5d2d90414a96102ba635fdc3b2a0d22e6281ea2'; // 11sanc11
+async function toggleAdmin(){
+  var p = document.getElementById('adminPanel');
+  if(p.style.display === 'block'){ p.style.display='none'; return; }
+  var pw = prompt('管理者パスワードを入力してください');
+  if(!pw) return;
+  var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+  var hash = Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+  if(hash !== adminPw){ alert('パスワードが正しくありません'); return; }
+  p.style.display = 'block';
+  document.getElementById('cfgWebhook').value = webhookUrl;
+}
+function saveCfg(){
+  webhookUrl = document.getElementById('cfgWebhook').value.trim();
+  localStorage.setItem('wb_webhook', webhookUrl);
+  document.getElementById('adminPanel').style.display = 'none';
+  alert('設定を保存しました');
+}
+
+// チップ
+function toggleChip(el){ el.classList.toggle('on'); }
+function getChips(el){
+  return Array.from(el.querySelectorAll('.chip.on')).map(function(c){return c.textContent.trim();}).join('、');
+}
+
+// ページ定義
+var PAGE_DEFS = {
+  'TOP（メイン）':{icon:'🏠',fields:[
+    {id:'top-catch',label:'メインキャッチコピー',type:'input',ph:'例：素材を活かす、一番のこだわり。'},
+    {id:'top-sub',label:'サブコピー・説明文',type:'textarea',rows:4,ph:'例：地元の旬の食材にこだわったカフェです。'},
+    {id:'top-cta',label:'CTAボタンの文言',type:'input',ph:'例：ご予約はこちら'},
+    {id:'top-photo',label:'写真のイメージ・指定',type:'textarea',rows:3,ph:'例：外観の昼の写真を大きく使ってほしい'},
+    {id:'top-other',label:'その他ご要望',type:'textarea',rows:3,ph:''},
+  ]},
+  'メニュー・料金':{icon:'📋',fields:[
+    {id:'menu2-list',label:'メニュー・料金一覧',type:'textarea',rows:10,ph:'例：&#10;・Aランチ ¥980&#10;・コーヒー ¥480'},
+    {id:'menu2-note',label:'注意書き・補足',type:'input',ph:'例：税込表示'},
+    {id:'menu2-other',label:'その他ご要望',type:'textarea',rows:3,ph:''},
+  ]},
+  'スタッフ・オーナー紹介':{icon:'👤',fields:[
+    {id:'staff-list',label:'プロフィール',type:'textarea',rows:10,ph:'例：&#10;【オーナー】田中太郎&#10;資格：柔道整復師&#10;経歴：〜'},
+    {id:'staff-photo',label:'写真のファイル名',type:'textarea',rows:3,ph:'例：staff_tanaka.jpg'},
+    {id:'staff-other',label:'その他ご要望',type:'textarea',rows:3,ph:''},
+  ]},
+  'お客様の声・実績':{icon:'⭐',fields:[
+    {id:'voice-list',label:'お客様の声',type:'textarea',rows:10,ph:'例：「肩こりが改善されました」（30代女性）'},
+    {id:'voice-result',label:'実績・数値',type:'textarea',rows:4,ph:'例：開業10年・リピート率85%'},
+    {id:'voice-other',label:'その他ご要望',type:'textarea',rows:3,ph:''},
+  ]},
+  'アクセス・MAP':{icon:'📍',fields:[
+    {id:'access-address',label:'住所（正式）',type:'input',ph:'例：福岡県福岡市中央区天神1-1-1'},
+    {id:'access-station',label:'最寄り駅',type:'input',ph:'例：地下鉄天神駅 徒歩3分'},
+    {id:'access-parking',label:'駐車場',type:'input',ph:'例：店舗前3台無料'},
+    {id:'access-hours',label:'営業時間・定休日',type:'textarea',rows:4,ph:'例：平日10:00〜20:00&#10;定休日：水曜'},
+    {id:'access-other',label:'その他',type:'textarea',rows:3,ph:''},
+  ]},
+  'こだわり・特徴':{icon:'💎',fields:[
+    {id:'feat-list',label:'こだわり・特徴',type:'textarea',rows:12,ph:'例：&#10;【こだわり1】地元産の旬の食材を使用&#10;説明：〜'},
+    {id:'feat-other',label:'その他ご要望',type:'textarea',rows:3,ph:''},
+  ]},
+  '予約・お問い合わせ':{icon:'📞',fields:[
+    {id:'rsv-method',label:'予約方法',type:'textarea',rows:5,ph:'例：&#10;・電話：090-0000-0000&#10;・LINE：@example'},
+    {id:'rsv-line',label:'LINE ID または URL',type:'input',ph:'@xxxxxx'},
+    {id:'rsv-other',label:'その他',type:'textarea',rows:3,ph:''},
+  ]},
+  'ブログ・お知らせ':{icon:'📝',fields:[
+    {id:'blog-content',label:'掲載したいお知らせ',type:'textarea',rows:6,ph:'例：年末年始の営業時間のお知らせ'},
+    {id:'blog-freq',label:'更新頻度',type:'input',ph:'例：月1〜2回'},
+    {id:'blog-other',label:'その他ご要望',type:'textarea',rows:3,ph:''},
+  ]},
+  'Q&A・よくある質問':{icon:'❓',fields:[
+    {id:'qa-list',label:'Q&A',type:'textarea',rows:12,ph:'例：&#10;Q：予約は必要ですか？&#10;A：予約優先制です。'},
+    {id:'qa-other',label:'その他ご要望',type:'textarea',rows:3,ph:''},
+  ]},
+  '会社概要':{icon:'🏢',fields:[
+    {id:'comp-info',label:'会社情報',type:'textarea',rows:8,ph:'例：&#10;会社名：株式会社〇〇&#10;代表者：田中太郎'},
+    {id:'comp-other',label:'その他ご要望',type:'textarea',rows:3,ph:''},
+  ]},
+  '採用情報':{icon:'💼',fields:[
+    {id:'hire-info',label:'採用情報',type:'textarea',rows:10,ph:'例：&#10;募集職種：ホールスタッフ&#10;給与：時給1,100円〜'},
+    {id:'hire-other',label:'その他ご要望',type:'textarea',rows:3,ph:''},
+  ]},
+  '症状別ページ':{icon:'🩺',fields:[
+    {id:'symp-list',label:'症状・お悩みと説明',type:'textarea',rows:12,ph:'例：&#10;【腰痛】長時間のデスクワークによる腰の痛み。'},
+    {id:'symp-other',label:'その他ご要望',type:'textarea',rows:3,ph:''},
+  ]},
+  'その他（担当者と相談）':{icon:'💬',fields:[
+    {id:'other-title',label:'ページのタイトル（仮）',type:'input',ph:'例：こだわりのコーヒーについて'},
+    {id:'other-content',label:'掲載したい内容',type:'textarea',rows:8,ph:'例：コーヒー豆の産地や焙煎へのこだわりを伝えたい'},
+    {id:'other-ref',label:'参考URL',type:'input',ph:'https://...'},
+    {id:'other-note',label:'担当者への質問・要望',type:'textarea',rows:4,ph:''},
+  ]},
+};
+
+var PAGES_STD = ['TOP（メイン）','メニュー・料金','アクセス・MAP','スタッフ・オーナー紹介','お客様の声・実績','予約・お問い合わせ','ブログ・お知らせ','こだわり・特徴','Q&A・よくある質問','会社概要','採用情報','その他（担当者と相談）'];
+var PAGES_PRE = PAGES_STD.concat(['症状別ページ']);
+
+function selectPlan(plan){
+  currentPlan = plan;
+  // プランカードのアクティブ状態
+  ['light','standard','premium'].forEach(function(p){
+    document.getElementById('pc-'+p).classList.toggle('active', p===plan);
+  });
+  // フォーム本体を表示
+  document.getElementById('formBody').style.display = 'block';
+  // ライト専用
+  document.getElementById('secLight').style.display = plan==='light' ? 'block' : 'none';
+  // ページ選択
+  document.getElementById('secPageSelect').style.display = plan==='light' ? 'none' : 'block';
+  // プレミアム追加
+  document.getElementById('secPremium').style.display = plan==='premium' ? 'block' : 'none';
+  // 写真ガイド
+  var guides = {light:'📸 推奨：計5枚程度',standard:'📸 推奨：計15枚程度',premium:'📸 推奨：計30枚程度'};
+  document.getElementById('photoGuide').innerHTML = guides[plan];
+  // ページチップ構築
+  if(plan !== 'light'){
+    selectedPages = ['TOP（メイン）'];
+    buildPageChips(plan);
+    buildPageForms();
+    document.getElementById('pageCount').textContent = 1;
+  }
+  // ページ数ガイド
+  var limits = {standard:5, premium:10};
+  if(limits[plan]) document.getElementById('pageLimitText').textContent = '最大'+limits[plan]+'ページまで選択できます。TOPは必須です。';
+  // スクロール
+  setTimeout(function(){
+    document.getElementById('formBody').scrollIntoView({behavior:'smooth',block:'start'});
+  },100);
+}
+
+function buildPageChips(plan){
+  var pages = plan==='premium' ? PAGES_PRE : PAGES_STD;
+  var limit = plan==='premium' ? 10 : 5;
+  var el = document.getElementById('pageChips');
+  el.innerHTML = '';
+  pages.forEach(function(p){
+    var div = document.createElement('div');
+    div.className = 'page-chip' + (p==='TOP（メイン）' ? ' on' : '');
+    div.innerHTML = '<span class="check">✓</span>' + p;
+    div.onclick = function(){
+      if(p==='TOP（メイン）') return;
+      if(div.classList.contains('on')){
+        div.classList.remove('on');
+        selectedPages = selectedPages.filter(function(x){return x!==p;});
+      } else {
+        if(selectedPages.length >= limit){ alert('最大'+limit+'ページまでです'); return; }
+        div.classList.add('on');
+        selectedPages.push(p);
+      }
+      document.getElementById('pageCount').textContent = selectedPages.length;
+      buildPageForms();
+    };
+    el.appendChild(div);
+  });
+}
+
+function buildPageForms(){
+  var container = document.getElementById('pageForms');
+  var saved = {};
+  container.querySelectorAll('[data-fid]').forEach(function(el){ saved[el.dataset.fid] = el.value; });
+  container.innerHTML = '';
+  var ordered = ['TOP（メイン）'].concat(selectedPages.filter(function(p){return p!=='TOP（メイン）';}));
+  ordered.forEach(function(page){
+    var def = PAGE_DEFS[page];
+    if(!def) return;
+    var card = document.createElement('div');
+    card.className = 'page-form-card';
+    var html = '<div class="page-form-title"><span>'+def.icon+'</span>'+page+'</div>';
+    def.fields.forEach(function(f){
+      html += '<div class="field"><label>'+f.label+'</label>';
+      var val = saved[f.id] || '';
+      if(f.type==='textarea'){
+        html += '<textarea id="'+f.id+'" data-fid="'+f.id+'" rows="'+(f.rows||4)+'" placeholder="'+f.ph+'">'+val+'</textarea>';
+      } else {
+        html += '<input type="text" id="'+f.id+'" data-fid="'+f.id+'" placeholder="'+f.ph+'" value="'+val+'">';
+      }
+      html += '</div>';
+    });
+    card.innerHTML = html;
+    container.appendChild(card);
+  });
+}
+
+function getPageData(){
+  var result = {};
+  var ordered = ['TOP（メイン）'].concat(selectedPages.filter(function(p){return p!=='TOP（メイン）';}));
+  ordered.forEach(function(page){
+    var def = PAGE_DEFS[page];
+    if(!def) return;
+    var pd = {};
+    def.fields.forEach(function(f){
+      var el = document.getElementById(f.id);
+      if(el) pd[f.label] = el.value.trim();
+    });
+    result[page] = pd;
+  });
+  return result;
+}
+
+function validate(){
+  if(!currentPlan){ alert('プランを選択してください'); window.scrollTo(0,0); return false; }
+  if(!document.getElementById('shopName').value.trim()){ alert('店舗名を入力してください'); return false; }
+  if(!document.getElementById('industry').value){ alert('業種を選択してください'); return false; }
+  if(!document.getElementById('contactName').value.trim()){ alert('担当者名を入力してください'); return false; }
+  var em = document.getElementById('contactEmail').value.trim();
+  if(!em || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){ alert('正しいメールアドレスを入力してください'); return false; }
+  if(!document.getElementById('formEmail').value.trim()){ alert('問い合わせ転送先メールを入力してください'); return false; }
+
+  return true;
+}
+
+function submitForm(){
+  if(!validate()) return;
+  var planNames = {light:'ライトプラン (¥8,000/月)',standard:'スタンダードプラン (¥15,000/月)',premium:'プレミアムプラン (¥30,000/月)'};
+  var data = {
+    plan: planNames[currentPlan],
+    shopName: document.getElementById('shopName').value.trim(),
+    industry: document.getElementById('industry').value,
+    contactName: document.getElementById('contactName').value.trim(),
+    contactEmail: document.getElementById('contactEmail').value.trim(),
+    contactTel: document.getElementById('contactTel').value.trim(),
+    publicTel: document.getElementById('publicTel').value.trim(),
+    address: document.getElementById('address').value.trim(),
+    hours: document.getElementById('hours').value.trim(),
+    sns: document.getElementById('sns').value.trim(),
+    formEmail: document.getElementById('formEmail').value.trim(),
+    catchcopy: document.getElementById('catchcopy').value.trim(),
+    mood: getChips(document.getElementById('chipsMood')),
+    color: getChips(document.getElementById('chipsColor')),
+    refUrls: document.getElementById('refUrls').value.trim(),
+    strength: document.getElementById('strength').value.trim(),
+    menuList: document.getElementById('menuList').value.trim(),
+    menuNote: document.getElementById('menuNote').value.trim(),
+    driveUrl: document.getElementById('driveUrl').value.trim(),
+    hasLogo: document.getElementById('hasLogo').value,
+    submittedAt: new Date().toLocaleString('ja-JP'),
+  };
+  if(currentPlan==='light'){
+    data.lightMain = document.getElementById('lightMain').value.trim();
+    data.lightNote = document.getElementById('lightNote').value.trim();
+  } else {
+    data.selectedPages = selectedPages;
+    data.pageData = getPageData();
+  }
+  if(currentPlan==='premium'){
+    data.preChatbot = document.getElementById('preChatbot').value.trim();
+    data.preGaEmail = document.getElementById('preGaEmail').value.trim();
+    data.preVideoUrl = document.getElementById('preVideoUrl').value.trim();
+  }
+  var btn = document.getElementById('btnSubmit');
+  btn.disabled = true;
+  btn.textContent = '送信中...';
+  if(webhookUrl){
+    fetch(webhookUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),mode:'no-cors'}).catch(function(){});
+    setTimeout(showSuccess, 1500);
+  } else {
+    setTimeout(showSuccess, 500);
+  }
+}
+
+function showSuccess(){
+  document.getElementById('formWrap').style.display = 'none';
+  document.getElementById('adminPanel').style.display = 'none';
+  document.querySelector('.admin-toggle').style.display = 'none';
+  document.getElementById('successWrap').style.display = 'block';
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>

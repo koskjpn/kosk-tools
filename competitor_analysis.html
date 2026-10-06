@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>競合アカウント分析ツール</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d14;--surface:#16161f;--surface2:#1e1e2a;--border:#2a2a3a;
+  --accent:#06b6d4;--accent2:#0ea5e9;--purple:#a855f7;--pink:#e1306c;
+  --green:#22c55e;--gold:#f59e0b;--red:#ef4444;
+  --text:#f0f0f8;--muted:#7a7a90;
+}
+body{background:var(--bg);color:var(--text);font-family:'Hiragino Sans','Meiryo',sans-serif;min-height:100vh}
+.app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+.sb{background:var(--surface);border-right:1px solid var(--border);padding:20px 16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto}
+.logo{font-size:14px;font-weight:700;color:var(--accent);letter-spacing:.04em;padding-bottom:12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
+.sec-label{font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+label{font-size:11px;color:var(--muted);display:block;margin-bottom:3px}
+input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:12px;color:var(--text);background:var(--surface2);outline:none;font-family:inherit}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+.field{margin-bottom:10px}
+.btn{padding:10px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all .15s;width:100%;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.btn-primary:hover{opacity:.85}
+.btn-ghost{background:var(--surface2);border:1px solid var(--border);color:var(--muted)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm{padding:5px 10px;font-size:11px;border-radius:6px;width:auto}
+.account-tag{display:flex;align-items:center;gap:6px;padding:6px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;margin-bottom:5px;font-size:12px}
+.account-tag .name{flex:1;color:var(--text)}
+.account-tag .del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:0 2px}
+.account-tag .del:hover{color:var(--red)}
+
+.main{padding:24px;overflow-y:auto}
+.main-title{font-size:18px;font-weight:700;margin-bottom:4px}
+.main-sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px}
+.card-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.card-sub{font-size:10px;color:var(--muted);margin-left:auto;font-weight:400}
+
+/* account card */
+.acct-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:all .15s;position:relative}
+.acct-card:hover{border-color:var(--accent)}
+.acct-card.selected{border-color:var(--accent);background:rgba(6,182,212,.05)}
+.acct-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.acct-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--pink));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.acct-info h3{font-size:13px;font-weight:700;margin-bottom:2px}
+.acct-info .handle{font-size:11px;color:var(--muted)}
+.acct-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center}
+.acct-stat-val{font-size:16px;font-weight:700;color:var(--accent)}
+.acct-stat-label{font-size:9px;color:var(--muted);margin-top:1px}
+.eng-badge{position:absolute;top:10px;right:10px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px}
+.eng-high{background:rgba(34,197,94,.2);color:var(--green)}
+.eng-mid{background:rgba(245,158,11,.2);color:var(--gold)}
+.eng-low{background:rgba(239,68,68,.2);color:var(--red)}
+
+/* post pattern */
+.pattern-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px}
+.pattern-item:last-child{border-bottom:none}
+.pattern-rank{width:20px;height:20px;border-radius:50%;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pr1{background:var(--gold);color:#000}
+.pr2{background:var(--muted);color:#fff}
+.pr3{background:#7c3a0e;color:#fff}
+.prn{background:var(--surface2);color:var(--muted)}
+.pattern-bar{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.pattern-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px}
+
+/* insight box */
+.insight-box{background:linear-gradient(135deg,rgba(168,85,247,.1),rgba(6,182,212,.08));border:1px solid rgba(168,85,247,.25);border-radius:10px;padding:12px;margin-bottom:10px;font-size:12px;line-height:1.8;color:var(--text)}
+.insight-label{font-size:10px;font-weight:700;color:var(--purple);margin-bottom:5px}
+.tag-chip{display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 9px;font-size:11px;color:var(--muted);margin:2px}
+.tag-chip.hot{background:rgba(225,48,108,.15);border-color:var(--pink);color:var(--pink)}
+
+/* loading */
+.loading{text-align:center;padding:80px 20px;color:var(--muted)}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* empty */
+.empty{text-align:center;padding:80px 20px;color:var(--muted)}
+.empty-icon{font-size:48px;margin-bottom:16px}
+
+/* strategy cards */
+.strategy-card{background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:10px 12px;margin-bottom:8px;font-size:12px;line-height:1.7;color:var(--text)}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 20px;border-radius:8px;font-size:12px;display:none;z-index:999;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.toast.show{display:block}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<div class="sb">
+  <div class="logo">🔍 競合分析ツール</div>
+
+  <div>
+    <div class="sec-label">Claude APIキー</div>
+    <div class="field">
+      <input type="password" id="apiKey" placeholder="sk-ant-api03-...">
+      <button class="btn btn-ghost btn-sm" onclick="saveKey()" style="margin-top:5px">保存</button>
+    </div>
+  </div>
+
+  <div>
+    <div class="sec-label">分析対象アカウント</div>
+    <div id="accountList" style="margin-bottom:8px"></div>
+    <div style="display:flex;gap:6px">
+      <input type="text" id="accountInput" placeholder="@handle または URL" style="flex:1">
+      <button class="btn btn-ghost btn-sm" onclick="addAccount()">追加</button>
+    </div>
+    <div style="font-size:10px;color:var(--muted);margin-top:6px;line-height:1.6">
+      ※ Instagramの公開アカウントのみ分析可能。<br>アカウントを3〜5個追加してください。
+    </div>
+  </div>
+
+  <div>
+    <div class="sec-label">分析設定</div>
+    <div class="field">
+      <label>自分の業種</label>
+      <select id="myGenre">
+        <option value="salon">美容室・ヘアサロン</option>
+        <option value="nail">ネイルサロン</option>
+        <option value="esthe">エステ・脱毛</option>
+        <option value="cafe">カフェ・飲食</option>
+        <option value="seikotsu">整骨院・接骨院</option>
+        <option value="fitness">ジム・フィットネス</option>
+        <option value="other">その他</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>自分のアカウント情報（任意）</label>
+      <textarea id="myInfo" placeholder="フォロワー数・現在の投稿頻度・強みなど" rows="3"></textarea>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" onclick="analyze()">🔍 競合分析を実行</button>
+  <button class="btn btn-ghost" onclick="loadDemo()">🎯 デモデータで確認</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="main-title">競合アカウント分析</div>
+  <div class="main-sub">競合の投稿パターン・エンゲージメント・バズり要因を分析し、戦略提案を生成します</div>
+
+  <!-- Empty -->
+  <div class="empty" id="emptyState">
+    <div class="empty-icon">🔍</div>
+    <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:8px">競合分析を始めましょう</div>
+    <div style="font-size:12px;line-height:1.9">
+      ① 競合アカウントを3〜5個追加<br>
+      ② 業種を選択<br>
+      ③「競合分析を実行」を押す
+    </div>
+    <div style="margin-top:24px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;max-width:360px;margin-left:auto;margin-right:auto;text-align:left;font-size:12px;line-height:1.9;color:var(--muted)">
+      <strong style="color:var(--text)">わかること</strong><br>
+      📊 エンゲージメント率の比較<br>
+      🏆 バズる投稿パターンの分析<br>
+      ⏰ 最適な投稿時間・曜日<br>
+      #️⃣ 効果的なハッシュタグ戦略<br>
+      💡 差別化のための戦略提案
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" id="loadingState" style="display:none">
+    <div class="spinner"></div>
+    <div id="loadingMsg" style="font-size:13px">分析しています...</div>
+  </div>
+
+  <!-- Results -->
+  <div id="results" style="display:none">
+
+    <!-- Account cards -->
+    <div id="accountCards" class="grid2" style="margin-bottom:14px"></div>
+
+    <!-- Patterns & Hashtags -->
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">🏆 バズる投稿パターン TOP5 <span class="card-sub">エンゲージ順</span></div>
+        <div id="patternList"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">#️⃣ 共通ハッシュタグ分析</div>
+        <div id="hashtagAnalysis"></div>
+      </div>
+    </div>
+
+    <!-- Posting time & content type -->
+    <div class="grid2" style="margin-top:14px">
+      <div class="card">
+        <div class="card-title">⏰ 最適投稿時間帯</div>
+        <div id="timeAnalysis"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📊 コンテンツタイプ別効果</div>
+        <div id="typeAnalysis"></div>
+      </div>
+    </div>
+
+    <!-- AI Strategy -->
+    <div class="card" style="margin-top:14px">
+      <div class="card-title">🤖 AI 戦略提案</div>
+      <div id="strategyContent"></div>
+    </div>
+
+    <!-- Action Plan -->
+    <div class="card" style="margin-top:14px">
+      <div class="card-title">📋 来月の実行アクションプラン</div>
+      <div id="actionPlan"></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var accounts = [];
+var analysisResult = null;
+
+// ===== Init =====
+(function(){
+  try{
+    var k=localStorage.getItem('comp_api_key')||'';
+    if(k) document.getElementById('apiKey').value=k;
+    var saved=JSON.parse(localStorage.getItem('comp_accounts')||'[]');
+    saved.forEach(function(a){ addAccountData(a); });
+  }catch(e){}
+})();
+
+function saveKey(){
+  var k=document.getElementById('apiKey').value.trim();
+  if(!k){ toast('APIキーを入力してください'); return; }
+  try{ localStorage.setItem('comp_api_key',k); }catch(e){}
+  toast('保存しました');
+}
+function getKey(){
+  var k=document.getElementById('apiKey').value.trim();
+  try{ return k||localStorage.getItem('comp_api_key')||''; }catch(e){ return k; }
+}
+
+// ===== Account management =====
+function addAccount(){
+  var val=document.getElementById('accountInput').value.trim();
+  if(!val) return;
+  var handle=val.replace(/^@/,'').replace(/.*instagram\.com\//,'').replace(/\//,'');
+  if(!handle){ toast('正しいアカウント名を入力してください'); return; }
+  if(accounts.find(function(a){return a===handle;})){ toast('すでに追加されています'); return; }
+  addAccountData(handle);
+  document.getElementById('accountInput').value='';
+  try{ localStorage.setItem('comp_accounts',JSON.stringify(accounts)); }catch(e){}
+}
+
+function addAccountData(handle){
+  accounts.push(handle);
+  renderAccountList();
+}
+
+function removeAccount(handle){
+  accounts=accounts.filter(function(a){return a!==handle;});
+  try{ localStorage.setItem('comp_accounts',JSON.stringify(accounts)); }catch(e){}
+  renderAccountList();
+}
+
+function renderAccountList(){
+  document.getElementById('accountList').innerHTML=accounts.map(function(a){
+    return '<div class="account-tag">'+
+      '<span style="color:var(--accent)">@</span>'+
+      '<span class="name">'+a+'</span>'+
+      '<button class="del" onclick="removeAccount(\''+a+'\')">×</button>'+
+      '</div>';
+  }).join('');
+}
+
+// ===== Analyze =====
+async function analyze(){
+  var key=getKey();
+  if(!key){ toast('APIキーを設定してください'); return; }
+  if(accounts.length<1){ toast('アカウントを1つ以上追加してください'); return; }
+
+  setLoading(true,'競合アカウントを分析中...');
+
+  var genre=document.getElementById('myGenre').value;
+  var genreLabel={'salon':'美容室・ヘアサロン','nail':'ネイルサロン','esthe':'エステ・脱毛','cafe':'カフェ・飲食','seikotsu':'整骨院・接骨院','fitness':'ジム・フィットネス','other':'店舗業'}[genre]||genre;
+  var myInfo=document.getElementById('myInfo').value;
+
+  var prompt='あなたはInstagramマーケティングの専門家です。以下の競合アカウントを分析し、戦略提案を行ってください。\n\n'+
+    '業種: '+genreLabel+'\n'+
+    '競合アカウント: '+accounts.map(function(a){return '@'+a;}).join(', ')+'\n'+
+    (myInfo?'自分の状況: '+myInfo+'\n':'')+
+    '\n以下のJSON形式で分析結果を出力してください（他のテキスト不要）:\n'+
+    '{\n'+
+    '  "accounts": [{"handle":"@xxx","nickname":"推定ニックネーム","followers":"推定フォロワー数（例:5,200）","posts":"推定投稿数","eng_rate":"推定エンゲージメント率（例:3.2%）","eng_level":"high|mid|low","strength":"強み1文","icon":"絵文字1つ"},...],\n'+
+    '  "patterns": [{"rank":1,"pattern":"バズるパターン名","desc":"説明","score":95},{"rank":2,...},...5個],\n'+
+    '  "hashtags": {"hot":["バズりタグ×5"],"niche":["ニッチタグ×5"],"local":["地域タグ×3"]},\n'+
+    '  "best_times": [{"time":"18〜20時","score":90,"reason":"理由"},{"time":"12〜13時","score":75,"reason":"..."},{"time":"7〜8時","score":60,"reason":"..."}],\n'+
+    '  "content_types": [{"type":"リール","score":95,"tip":"効果的な使い方"},{"type":"カルーセル","score":80,"tip":"..."},{"type":"フィード","score":65,"tip":"..."},{"type":"ストーリーズ","score":70,"tip":"..."}],\n'+
+    '  "strategy": ["差別化ポイント①（具体的に）","差別化ポイント②","差別化ポイント③","差別化ポイント④"],\n'+
+    '  "action_plan": [{"week":"1週目","action":"具体的なアクション"},{"week":"2週目","action":"..."},{"week":"3週目","action":"..."},{"week":"4週目","action":"..."}]\n'+
+    '}';
+
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'x-api-key':key,
+        'anthropic-version':'2023-06-01',
+        'content-type':'application/json',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:2500,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    if(!res.ok) throw new Error('API Error '+res.status);
+    var d=await res.json();
+    var text=d.content[0].text;
+    var json=text.match(/\{[\s\S]*\}/);
+    if(!json) throw new Error('JSONの抽出失敗');
+    analysisResult=JSON.parse(json[0]);
+    setLoading(false);
+    renderResults(analysisResult);
+    toast('分析完了！');
+  }catch(e){
+    setLoading(false);
+    toast('エラー: '+e.message);
+  }
+}
+
+// ===== Render =====
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fmt(n){return n?n.toLocaleString():'--';}
+
+function renderResults(data){
+  document.getElementById('emptyState').style.display='none';
+  document.getElementById('results').style.display='';
+
+  // Account cards
+  var accs=data.accounts||[];
+  document.getElementById('accountCards').innerHTML=accs.map(function(a){
+    var engCls=a.eng_level==='high'?'eng-high':a.eng_level==='mid'?'eng-mid':'eng-low';
+    var engLabel=a.eng_level==='high'?'高エンゲージ':a.eng_level==='mid'?'中エンゲージ':'低エンゲージ';
+    return '<div class="acct-card">'+
+      '<span class="eng-badge '+engCls+'">'+engLabel+'</span>'+
+      '<div class="acct-top">'+
+      '<div class="acct-avatar">'+(a.icon||'📱')+'</div>'+
+      '<div class="acct-info"><h3>'+esc(a.nickname||a.handle)+'</h3><div class="handle">'+esc(a.handle)+'</div></div>'+
+      '</div>'+
+      '<div class="acct-stats">'+
+      '<div><div class="acct-stat-val">'+esc(a.followers||'--')+'</div><div class="acct-stat-label">フォロワー</div></div>'+
+      '<div><div class="acct-stat-val">'+esc(a.posts||'--')+'</div><div class="acct-stat-label">投稿数</div></div>'+
+      '<div><div class="acct-stat-val">'+esc(a.eng_rate||'--')+'</div><div class="acct-stat-label">エンゲージ率</div></div>'+
+      '</div>'+
+      (a.strength?'<div style="font-size:11px;color:var(--muted);margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">💡 '+esc(a.strength)+'</div>':'')+
+      '</div>';
+  }).join('');
+
+  // Patterns
+  var pats=data.patterns||[];
+  var maxScore=pats[0]?pats[0].score:100;
+  document.getElementById('patternList').innerHTML=pats.map(function(p,i){
+    var cls=['pr1','pr2','pr3','prn','prn'][i]||'prn';
+    return '<div class="pattern-item">'+
+      '<div class="pattern-rank '+cls+'">'+(i+1)+'</div>'+
+      '<div style="flex:1">'+
+      '<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px">'+esc(p.pattern)+'</div>'+
+      '<div style="font-size:10px;color:var(--muted)">'+esc(p.desc)+'</div>'+
+      '<div class="pattern-bar" style="margin-top:4px"><div class="pattern-fill" style="width:'+(p.score/maxScore*100)+'%"></div></div>'+
+      '</div>'+
+      '<div style="font-size:11px;color:var(--accent);min-width:30px;text-align:right">'+p.score+'</div>'+
+      '</div>';
+  }).join('');
+
+  // Hashtags
+  var htags=data.hashtags||{};
+  document.getElementById('hashtagAnalysis').innerHTML=
+    '<div style="margin-bottom:10px">'+
+    '<div style="font-size:10px;color:var(--pink);font-weight:700;margin-bottom:5px">🔥 バズりタグ</div>'+
+    (htags.hot||[]).map(function(t){return '<span class="tag-chip hot">'+esc(t)+'</span>';}).join('')+
+    '</div>'+
+    '<div style="margin-bottom:10px">'+
+    '<div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:5px">🎯 ニッチタグ（競合少）</div>'+
+    (htags.niche||[]).map(function(t){return '<span class="tag-chip">'+esc(t)+'</span>';}).join('')+
+    '</div>'+
+    '<div>'+
+    '<div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:5px">📍 地域タグ</div>'+
+    (htags.local||[]).map(function(t){return '<span class="tag-chip">'+esc(t)+'</span>';}).join('')+
+    '</div>';
+
+  // Best times
+  var times=data.best_times||[];
+  document.getElementById('timeAnalysis').innerHTML=times.map(function(t){
+    var pct=t.score||50;
+    return '<div style="margin-bottom:10px">'+
+      '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">'+
+      '<span style="font-weight:600">⏰ '+esc(t.time)+'</span>'+
+      '<span style="color:var(--accent)">'+pct+'pt</span>'+
+      '</div>'+
+      '<div style="background:var(--surface2);border-radius:4px;height:8px;margin-bottom:4px"><div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px"></div></div>'+
+      '<div style="font-size:10px;color:var(--muted)">'+esc(t.reason)+'</div>'+
+      '</div>';
+  }).join('');
+
+  // Content types
+  var types=data.content_types||[];
+  document.getElementById('typeAnalysis').innerHTML=types.map(function(t){
+    var icons={リール:'🎬',カルーセル:'📚',フィード:'📷',ストーリーズ:'⭕'};
+    var pct=t.score||50;
+    return '<div style="margin-bottom:10px">'+
+      '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">'+
+      '<span style="font-weight:600">'+(icons[t.type]||'📄')+' '+esc(t.type)+'</span>'+
+      '<span style="color:var(--accent)">'+pct+'pt</span>'+
+      '</div>'+
+      '<div style="background:var(--surface2);border-radius:4px;height:8px;margin-bottom:4px"><div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,var(--purple),var(--accent));border-radius:4px"></div></div>'+
+      '<div style="font-size:10px;color:var(--muted)">'+esc(t.tip)+'</div>'+
+      '</div>';
+  }).join('');
+
+  // Strategy
+  var strats=data.strategy||[];
+  document.getElementById('strategyContent').innerHTML=strats.map(function(s,i){
+    return '<div class="strategy-card"><span style="color:var(--accent);font-weight:700">'+['①','②','③','④'][i]+'</span> '+esc(s)+'</div>';
+  }).join('');
+
+  // Action plan
+  var plan=data.action_plan||[];
+  document.getElementById('actionPlan').innerHTML=
+    '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">'+
+    plan.map(function(p){
+      return '<div style="background:var(--surface2);border-radius:8px;padding:12px">'+
+        '<div style="font-size:10px;color:var(--accent);font-weight:700;margin-bottom:5px">'+esc(p.week)+'</div>'+
+        '<div style="font-size:12px;line-height:1.7;color:var(--text)">'+esc(p.action)+'</div>'+
+        '</div>';
+    }).join('')+
+    '</div>';
+}
+
+// ===== Demo =====
+function loadDemo(){
+  var demo={
+    accounts:[
+      {handle:'@sample_salon_a',nickname:'サンプルサロンA',followers:'8,200',posts:'312',eng_rate:'4.1%',eng_level:'high',strength:'リール動画の完成度が高く、毎回ビフォーアフターで統一感がある',icon:'✂️'},
+      {handle:'@sample_salon_b',nickname:'サンプルサロンB',followers:'5,600',posts:'198',eng_rate:'2.8%',eng_level:'mid',strength:'地域タグの活用が上手く地元客の来店が多い',icon:'💇'},
+      {handle:'@sample_nail_c',nickname:'サンプルネイルC',followers:'12,400',posts:'445',eng_rate:'5.2%',eng_level:'high',strength:'デザイン性の高い画像と丁寧なキャプションで保存数が多い',icon:'💅'},
+    ],
+    patterns:[
+      {rank:1,pattern:'ビフォーアフター対比',desc:'施術前後を並べた投稿。保存・シェアが多い',score:95},
+      {rank:2,pattern:'15秒テクニック解説',desc:'プロの技をクローズアップで見せるリール',score:82},
+      {rank:3,pattern:'お客様インタビュー',desc:'施術後の感想動画。信頼感・親近感UP',score:74},
+      {rank:4,pattern:'限定クーポン告知',desc:'ストーリーズ限定の割引。保存率UP',score:61},
+      {rank:5,pattern:'スタッフ日常Behind',desc:'舞台裏・日常風景で親しみやすさを演出',score:55},
+    ],
+    hashtags:{
+      hot:['#ヘアカラー','#美髪','#透明感カラー','#ヘアスタイル','#サロン'],
+      niche:['#福岡美容室','#天神ヘアサロン','#インナーカラー福岡','#艶髪女子','#髪質改善'],
+      local:['#福岡','#博多','#天神']
+    },
+    best_times:[
+      {time:'18〜20時',score:92,reason:'仕事帰りのスクロール時間。最もアクティブなユーザーが多い'},
+      {time:'12〜13時',score:75,reason:'ランチタイム閲覧層。若い女性ユーザーが多い時間帯'},
+      {time:'7〜8時',score:58,reason:'通勤中の閲覧。短い動画コンテンツが刺さりやすい'},
+    ],
+    content_types:[
+      {type:'リール',score:95,tip:'ビフォーアフターや15秒テクニック動画で最大リーチ'},
+      {type:'カルーセル',score:80,tip:'施術工程を複数枚で見せると保存数が増加'},
+      {type:'ストーリーズ',score:70,tip:'限定クーポンや質問箱でエンゲージメント向上'},
+      {type:'フィード',score:65,tip:'プロフィールの統一感を保ちブランディングに活用'},
+    ],
+    strategy:[
+      'ビフォーアフターリールを週2本投稿。競合の平均エンゲージ率4%を上回るためにナレーション付きに差別化',
+      '地域タグ（#福岡美容室など）を全投稿に必ず3〜5個使用。検索流入を競合より20%増やす',
+      'ストーリーズのQ&A機能を毎週使い、フォロワーとの双方向コミュニケーションで解約率を下げる',
+      '競合が手薄な「施術工程の詳細解説」コンテンツを月4本制作し、専門性で差別化する',
+    ],
+    action_plan:[
+      {week:'1週目',action:'ビフォーアフターリール2本制作・投稿。地域タグ5個必ず追加'},
+      {week:'2週目',action:'ストーリーズQ&A実施。回答をフィード投稿にまとめて保存数を狙う'},
+      {week:'3週目',action:'施術工程カルーセル投稿2本。キャプションに料金・予約導線を明記'},
+      {week:'4週目',action:'月末クーポンをストーリーズ限定で告知。来月のコンテンツ計画を立案'},
+    ]
+  };
+  analysisResult=demo;
+  document.getElementById('emptyState').style.display='none';
+  renderResults(demo);
+  toast('デモデータを表示しました');
+}
+
+function setLoading(on, msg){
+  document.getElementById('loadingState').style.display=on?'':'none';
+  if(msg) document.getElementById('loadingMsg').textContent=msg;
+  if(on){ document.getElementById('emptyState').style.display='none'; document.getElementById('results').style.display='none'; }
+}
+
+function toast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show';
+  setTimeout(function(){t.className='toast';},2500);
+}
+</script>
+</body>
+</html>

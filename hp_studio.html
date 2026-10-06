@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WEBLINO | HP Studio</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090f;--s1:#111118;--s2:#18181f;--s3:#22222c;
+  --bd:#2a2a3a;--bd2:#3a3a4a;
+  --ac:#7c3aed;--ac2:#a855f7;--pink:#e1306c;
+  --gold:#f59e0b;--green:#16a34a;--teal:#0891b2;
+  --text:#f0f0f8;--muted:#7a7a90;--muted2:#5a5a70;
+  --grad:linear-gradient(135deg,#7c3aed,#e1306c);
+}
+body{background:var(--bg);color:var(--text);font-family:'Hiragino Sans','Meiryo',sans-serif;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+/* HEADER */
+.header{background:var(--s1);border-bottom:1px solid var(--bd);padding:0 16px;display:flex;align-items:center;gap:10px;height:48px;flex-shrink:0}
+.logo{font-size:15px;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.vtag{font-size:9px;background:rgba(124,58,237,.2);color:var(--ac2);padding:2px 6px;border-radius:4px;font-weight:700}
+.hs{flex:1}
+.hbtn{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--bd);background:var(--s2);color:var(--muted);transition:all .15s;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.hbtn:hover{border-color:var(--ac);color:var(--ac)}
+.hbtn.p{background:var(--grad);border:none;color:#fff}
+.hbtn.p:hover{opacity:.85}
+.hbtn:disabled{opacity:.4;cursor:default}
+
+/* LAYOUT: 3カラム */
+.app{display:grid;grid-template-columns:340px 1fr 300px;flex:1;overflow:hidden;min-height:0}
+
+/* ===== LEFT: CHAT ===== */
+.chat-col{display:flex;flex-direction:column;background:var(--s1);border-right:1px solid var(--bd);overflow:hidden;min-height:0}
+.api-bar{padding:7px 12px;border-bottom:1px solid var(--bd);display:flex;gap:6px;align-items:center;flex-shrink:0}
+.api-input{flex:1;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--text);padding:5px 8px;font-size:11px;outline:none;min-width:0}
+.api-input:focus{border-color:var(--ac)}
+.api-sbtn{padding:4px 9px;border-radius:5px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid var(--bd);background:var(--s2);color:var(--muted);white-space:nowrap}
+.api-sbtn:hover{border-color:var(--ac);color:var(--ac)}
+.api-st{font-size:9px;padding:2px 7px;border-radius:8px;white-space:nowrap}
+.api-ok{background:rgba(22,163,74,.15);color:var(--green)}
+.api-ng{background:rgba(239,68,68,.15);color:#ef4444}
+
+.quick-bar{display:flex;flex-wrap:wrap;gap:4px;padding:7px 10px;border-bottom:1px solid var(--bd);flex-shrink:0}
+.qbtn{padding:3px 9px;border-radius:14px;font-size:10px;cursor:pointer;border:1px solid var(--bd);background:var(--s2);color:var(--muted);transition:all .15s;white-space:nowrap}
+.qbtn:hover{border-color:var(--ac);color:var(--ac)}
+
+.chat-msgs{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:10px;min-height:0}
+.msg{display:flex;gap:7px;align-items:flex-start}
+.msg.u{flex-direction:row-reverse}
+.av{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px}
+.msg.ai .av{background:var(--grad)}
+.msg.u .av{background:var(--s3);border:1px solid var(--bd)}
+.bbl{max-width:270px;padding:9px 12px;border-radius:11px;font-size:12px;line-height:1.7}
+.msg.ai .bbl{background:var(--s2);border:1px solid var(--bd);border-top-left-radius:3px}
+.msg.u .bbl{background:var(--ac);color:#fff;border-top-right-radius:3px}
+.tdot{width:5px;height:5px;border-radius:50%;background:var(--muted);animation:tb 1.2s infinite}
+.tdot:nth-child(2){animation-delay:.2s}
+.tdot:nth-child(3){animation-delay:.4s}
+@keyframes tb{0%,80%,100%{transform:scale(.8);opacity:.5}40%{transform:scale(1.2);opacity:1}}
+
+.chat-in-area{flex-shrink:0;border-top:1px solid var(--bd);padding:10px}
+.in-wrap{background:var(--s2);border:1px solid var(--bd);border-radius:10px;transition:border-color .15s}
+.in-wrap:focus-within{border-color:var(--ac)}
+.chat-ta{width:100%;background:none;border:none;outline:none;color:var(--text);font-size:12px;font-family:inherit;resize:none;padding:9px 12px;max-height:140px;min-height:40px;line-height:1.6}
+.in-foot{display:flex;align-items:center;gap:5px;padding:5px 8px;border-top:1px solid var(--bd)}
+.abtn{padding:3px 8px;border-radius:5px;font-size:10px;cursor:pointer;border:1px solid var(--bd);background:none;color:var(--muted)}
+.abtn:hover{border-color:var(--ac);color:var(--ac)}
+.send-btn{width:28px;height:28px;border-radius:7px;background:var(--grad);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;margin-left:auto}
+.send-btn:hover{opacity:.85}
+.send-btn:disabled{opacity:.4;cursor:default}
+.in-hint{font-size:9px;color:var(--muted2);padding:3px 12px 6px}
+
+/* ===== CENTER: PREVIEW ===== */
+.prev-col{display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.prev-bar{padding:8px 12px;border-bottom:1px solid var(--bd);background:var(--s1);display:flex;align-items:center;gap:7px;flex-shrink:0}
+.bdots{display:flex;gap:4px}
+.dot{width:9px;height:9px;border-radius:50%}
+.dr{background:#ef4444}.dy{background:#f59e0b}.dg{background:#22c55e}
+.url-bar{flex:1;background:var(--s2);border:1px solid var(--bd);border-radius:5px;padding:4px 9px;font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pv-btns{display:flex;gap:4px}
+.pvbtn{padding:4px 8px;border-radius:5px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid var(--bd);background:var(--s2);color:var(--muted)}
+.pvbtn:hover{border-color:var(--ac);color:var(--ac)}
+.pvbtn.on{background:var(--ac);border-color:var(--ac);color:#fff}
+
+.prev-wrap{flex:1;overflow:hidden;position:relative;background:var(--s3);display:flex;align-items:flex-start;justify-content:center;min-height:0}
+.pf-wrap{width:100%;height:100%;background:#fff;transition:all .3s}
+#previewFrame{width:100%;height:100%;border:none}
+.prev-wrap.sp .pf-wrap{width:390px;height:calc(100% - 32px);border-radius:32px;overflow:hidden;border:7px solid var(--bd2);box-shadow:0 16px 48px rgba(0,0,0,.5);margin-top:16px}
+
+.empty-state{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;pointer-events:none}
+.empty-icon{font-size:48px;margin-bottom:12px;opacity:.25}
+.empty-title{font-size:16px;font-weight:700;opacity:.4;margin-bottom:6px}
+.empty-sub{font-size:11px;color:var(--muted);line-height:1.8;opacity:.6}
+.ex-cards{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:18px;pointer-events:all}
+.ex-card{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:9px 11px;cursor:pointer;text-align:left;transition:all .15s}
+.ex-card:hover{border-color:var(--ac)}
+.ex-card-t{font-size:11px;font-weight:700;margin-bottom:2px}
+.ex-card-d{font-size:10px;color:var(--muted);line-height:1.4}
+
+.gen-ov{position:absolute;inset:0;background:rgba(9,9,15,.85);display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:10;backdrop-filter:blur(4px)}
+.gen-ov.show{display:flex}
+.gen-ring{width:44px;height:44px;border:3px solid var(--bd);border-top-color:var(--ac);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.gen-msg{font-size:12px;color:var(--muted);text-align:center;max-width:260px;line-height:1.6}
+.gen-prog{width:180px;height:3px;background:var(--bd);border-radius:2px;overflow:hidden}
+.gen-fill{height:100%;background:var(--grad);border-radius:2px;transition:width .4s}
+
+/* ===== RIGHT: SETTINGS ===== */
+.set-col{background:var(--s1);border-left:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.rtabs{display:flex;overflow-x:auto;border-bottom:1px solid var(--bd);flex-shrink:0;-webkit-overflow-scrolling:touch}
+.rtabs::-webkit-scrollbar{height:0}
+.rtab{padding:8px 10px;font-size:10px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .15s;flex-shrink:0}
+.rtab.on{color:var(--ac);border-bottom-color:var(--ac)}
+.rpanel{flex:1;overflow-y:auto;padding:12px}
+.rsec{display:none}
+.rsec.on{display:block}
+
+/* form elements */
+.fl{font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;margin-top:12px}
+.fl:first-child{margin-top:0}
+input[type=text],input[type=password],input[type=number],input[type=email],input[type=tel],select,textarea{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--text);padding:7px 9px;font-size:11px;outline:none;font-family:inherit;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--ac)}
+select option{background:var(--s2)}
+textarea{resize:vertical;min-height:55px}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.chip{padding:3px 9px;border-radius:14px;font-size:10px;cursor:pointer;border:1px solid var(--bd);background:var(--s2);color:var(--muted);transition:all .15s;user-select:none}
+.chip.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.chip:hover:not(.on){border-color:var(--ac);color:var(--ac)}
+.btn{padding:7px 12px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:5px;justify-content:center;width:100%;margin-top:6px}
+.btn-p{background:var(--grad);color:#fff}
+.btn-p:hover{opacity:.85}
+.btn-g{background:var(--s2);border:1px solid var(--bd);color:var(--muted)}
+.btn-g:hover{border-color:var(--ac);color:var(--ac)}
+.btn-green{background:rgba(22,163,74,.15);border:1px solid rgba(22,163,74,.3);color:var(--green)}
+.btn-gold{background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);color:var(--gold)}
+input[type=color]{width:28px;height:26px;border:none;border-radius:4px;cursor:pointer;padding:0;background:none}
+.row{display:flex;align-items:center;gap:6px}
+.seo-score{display:flex;align-items:center;gap:6px;margin-top:6px}
+.score-bar{flex:1;height:5px;background:var(--bd);border-radius:3px;overflow:hidden}
+.score-fill{height:100%;border-radius:3px;transition:width .4s}
+.sg{background:var(--green)}.sm{background:var(--gold)}.sb{background:var(--pink)}
+
+/* image upload */
+.img-zone{border:1.5px dashed var(--bd);border-radius:8px;padding:10px;text-align:center;cursor:pointer;transition:all .15s;background:var(--s2);height:80px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;margin-top:4px}
+.img-zone:hover{border-color:var(--ac)}
+.img-zone img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:6px}
+.img-clear{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.7);border:none;color:#fff;border-radius:50%;width:18px;height:18px;cursor:pointer;font-size:11px;line-height:1;z-index:2}
+.thumb{width:44px;height:44px;border-radius:5px;object-fit:cover;border:1px solid var(--bd);cursor:pointer;margin:2px}
+.acc-btn{background:none;border:1px dashed var(--bd);border-radius:7px;color:var(--muted);font-size:11px;cursor:pointer;padding:7px;width:100%;text-align:left;transition:all .15s;margin-top:8px}
+.acc-btn:hover{border-color:var(--ac);color:var(--ac)}
+.acc-body{display:none;margin-top:8px;padding:10px;background:var(--s2);border:1px solid var(--bd);border-radius:8px}
+
+/* block list */
+.blk{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.blk-icon{font-size:15px;flex-shrink:0}
+.blk-name{font-size:11px;font-weight:700;flex:1}
+.blk-st{font-size:9px;padding:2px 7px;border-radius:8px;background:rgba(22,163,74,.15);color:var(--green)}
+
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.show{display:flex}
+.modal{background:var(--s1);border:1px solid var(--bd);border-radius:13px;padding:20px;width:100%;max-width:520px;max-height:85vh;overflow-y:auto}
+.modal-title{font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.modal-x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px}
+
+/* inline editor */
+.ed-modal{position:fixed;inset:0;z-index:400;background:var(--bg);display:none;flex-direction:column}
+.ed-modal.show{display:flex}
+.ed-bar{background:var(--s1);border-bottom:1px solid var(--bd);padding:8px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.ed-title{font-size:13px;font-weight:700}
+.ed-hint{font-size:10px;color:var(--muted)}
+.ed-body{flex:1;display:flex;overflow:hidden}
+.ed-props{width:220px;background:var(--s1);border-right:1px solid var(--bd);padding:12px;overflow-y:auto;display:none;font-size:11px}
+.ed-frame-wrap{flex:1;background:var(--s3);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:12px}
+.ed-frame-inner{background:#fff;box-shadow:0 8px 32px rgba(0,0,0,.4);border-radius:8px;overflow:hidden;width:100%;max-width:1200px;transition:width .3s}
+#editorFrame{width:100%;height:calc(100vh - 90px);border:none}
+
+.sec-tmpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.sec-tmpl{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:10px;cursor:pointer;transition:all .15s}
+.sec-tmpl:hover{border-color:var(--ac)}
+.sec-tmpl-icon{font-size:18px;margin-bottom:4px}
+.sec-tmpl-name{font-size:11px;font-weight:700;margin-bottom:2px}
+.sec-tmpl-desc{font-size:10px;color:var(--muted)}
+
+/* toast */
+.toast{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);background:var(--s2);border:1px solid var(--bd);color:var(--text);padding:8px 16px;border-radius:8px;font-size:11px;display:none;z-index:999;box-shadow:0 8px 24px rgba(0,0,0,.5);white-space:nowrap}
+.toast.show{display:block}
+
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">WEBLINO</div>
+  <span class="vtag">AI POWERED</span>
+  <div class="hs"></div>
+  <button class="hbtn" onclick="undoHP()">↩ Undo</button>
+  <button class="hbtn" onclick="toggleDevice()" id="deviceBtn">📱 スマホ</button>
+  <button class="hbtn" onclick="openInlineEditor()" id="edBtn">✏️ インライン編集</button>
+  <button class="hbtn" onclick="openInDetailEditor()">🔧 詳細エディタ</button>
+  <button class="hbtn" onclick="clearAll()">🗑 クリア</button>
+  <button class="hbtn p" onclick="downloadHP()" id="dlBtn" disabled>⬇ ダウンロード</button>
+</div>
+
+<div class="app">
+
+<!-- ===== LEFT: CHAT ===== -->
+<div class="chat-col">
+  <div class="api-bar">
+    <span style="font-size:10px;color:var(--muted)">🔑</span>
+    <input type="password" class="api-input" id="apiKeyInput" placeholder="Claude APIキー (sk-ant-...)">
+    <button class="api-sbtn" onclick="saveKey()">保存</button>
+    <span id="apiStatus" class="api-st api-ng">未設定</span>
+  </div>
+  <div class="quick-bar">
+    <button class="qbtn" onclick="showScriptModal()">📋 台本から作る</button>
+    <button class="qbtn" onclick="qa('デザインを変更して')">🎨 デザイン変更</button>
+    <button class="qbtn" onclick="qa('もっとおしゃれにして')">✨ おしゃれに</button>
+    <button class="qbtn" onclick="qa('スマホ表示を最適化して')">📱 スマホ最適化</button>
+    <button class="qbtn" onclick="qa('セクションを1つ追加して')">➕ セクション追加</button>
+    <button class="qbtn" onclick="qa('英語表記も追加して')">🌏 英語追加</button>
+    <button class="qbtn" onclick="generateFromForm()">📋 フォーム情報で生成</button>
+  </div>
+  <div class="chat-msgs" id="chatMsgs"></div>
+  <div class="chat-in-area">
+    <div class="in-wrap">
+      <textarea class="chat-ta" id="chatInput" placeholder="「カフェのHPを作って」「ヘッダーを黒にして」「料金表を追加して」など..." rows="2" onkeydown="onKey(event)"></textarea>
+      <div class="in-foot">
+        <button class="abtn" onclick="showScriptModal()">📋 台本貼り付け</button>
+        <button class="abtn" onclick="document.getElementById('imgUp').click()">🖼 画像添付</button>
+        <input type="file" id="imgUp" accept="image/*" style="display:none" onchange="attachImg(this)">
+        <button class="send-btn" id="sendBtn" onclick="sendMsg()">▶</button>
+      </div>
+    </div>
+    <div class="in-hint">Enter で送信　Shift+Enter で改行</div>
+  </div>
+</div>
+
+<!-- ===== CENTER: PREVIEW ===== -->
+<div class="prev-col">
+  <div class="prev-bar">
+    <div class="bdots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+    <div class="url-bar" id="previewUrl">— まだ生成されていません —</div>
+    <div class="pv-btns">
+      <button class="pvbtn on" onclick="setZoom(100,this)">100%</button>
+      <button class="pvbtn" onclick="setZoom(75,this)">75%</button>
+      <button class="pvbtn" onclick="setZoom(50,this)">50%</button>
+    </div>
+  </div>
+  <div class="prev-wrap" id="prevWrap">
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">🏠</div>
+      <div class="empty-title">まだ生成されていません</div>
+      <div class="empty-sub">左のチャットで指示するか<br>右パネルで情報を入力してください</div>
+      <div class="ex-cards">
+        <div class="ex-card" onclick="qa('モダンなカフェのHPを黒ベースで作って')"><div class="ex-card-t">☕ カフェHP</div><div class="ex-card-d">モダン・黒ベース</div></div>
+        <div class="ex-card" onclick="qa('SaaSサービスのLPをダークテーマで作って')"><div class="ex-card-t">💻 SaaS LP</div><div class="ex-card-d">ダークテーマ</div></div>
+        <div class="ex-card" onclick="qa('美容室のHPをナチュラルでおしゃれな感じで作って')"><div class="ex-card-t">💇 美容室HP</div><div class="ex-card-d">ナチュラル</div></div>
+        <div class="ex-card" onclick="showScriptModal()"><div class="ex-card-t">📋 台本から作る</div><div class="ex-card-d">原稿を貼り付け</div></div>
+      </div>
+    </div>
+    <div class="pf-wrap" id="pfWrap" style="display:none">
+      <iframe id="previewFrame" sandbox="allow-same-origin allow-scripts allow-forms"></iframe>
+    </div>
+    <div class="gen-ov" id="genOv">
+      <div class="gen-ring"></div>
+      <div class="gen-msg" id="genMsg">AIが生成しています...</div>
+      <div class="gen-prog"><div class="gen-fill" id="genFill" style="width:0%"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RIGHT: SETTINGS ===== -->
+<div class="set-col">
+  <div class="rtabs">
+    <div class="rtab on" onclick="rtab('info',this)">📋 情報</div>
+    <div class="rtab" onclick="rtab('img',this)">🖼 画像</div>
+    <div class="rtab" onclick="rtab('ref',this)">🎨 参考</div>
+    <div class="rtab" onclick="rtab('seo',this)">🔍 SEO</div>
+    <div class="rtab" onclick="rtab('form',this)">📬 フォーム</div>
+    <div class="rtab" onclick="rtab('ga',this)">📊 GA</div>
+    <div class="rtab" onclick="rtab('blks',this)">📦 構成</div>
+  </div>
+  <div class="rpanel">
+
+    <!-- 📋 情報 -->
+    <div class="rsec on" id="rs-info">
+      <div class="fl">店舗名 *</div>
+      <input type="text" id="storeName" placeholder="例：美容室 Bloom">
+      <div class="fl">業種</div>
+      <select id="genre">
+        <option value="salon">美容室・サロン</option>
+        <option value="nail">ネイルサロン</option>
+        <option value="esthe">エステ・脱毛</option>
+        <option value="cafe">カフェ・飲食</option>
+        <option value="restaurant">レストラン</option>
+        <option value="seikotsu">整骨院・整体</option>
+        <option value="fitness">ジム・フィットネス</option>
+        <option value="shop">セレクトショップ</option>
+        <option value="clinic">クリニック</option>
+        <option value="school">スクール・教室</option>
+        <option value="saas">SaaS・IT</option>
+        <option value="consultant">コンサルタント</option>
+        <option value="other">その他</option>
+      </select>
+      <div class="fl">所在地</div>
+      <input type="text" id="location" placeholder="例：福岡市中央区">
+      <div class="fl">電話番号</div>
+      <input type="tel" id="phone" placeholder="例：092-XXX-XXXX">
+      <div class="fl">強み・ウリ</div>
+      <textarea id="strength" placeholder="例：駅徒歩3分・完全個室・子連れOK"></textarea>
+      <div class="fl">ターゲット</div>
+      <div class="chips" id="targetChips">
+        <div class="chip" onclick="toggleChip(this)">20〜30代女性</div>
+        <div class="chip" onclick="toggleChip(this)">30〜40代女性</div>
+        <div class="chip" onclick="toggleChip(this)">男性</div>
+        <div class="chip" onclick="toggleChip(this)">ファミリー</div>
+        <div class="chip" onclick="toggleChip(this)">シニア</div>
+        <div class="chip" onclick="toggleChip(this)">学生</div>
+        <div class="chip" onclick="toggleChip(this)">経営者</div>
+      </div>
+      <div class="fl">デザイン</div>
+      <div class="chips" id="styleChips">
+        <div class="chip on" onclick="exChip(this,'styleChips')">ナチュラル</div>
+        <div class="chip" onclick="exChip(this,'styleChips')">高級感・上品</div>
+        <div class="chip" onclick="exChip(this,'styleChips')">ポップ</div>
+        <div class="chip" onclick="exChip(this,'styleChips')">クール・モダン</div>
+        <div class="chip" onclick="exChip(this,'styleChips')">和風</div>
+        <div class="chip" onclick="exChip(this,'styleChips')">ミニマル</div>
+        <div class="chip" onclick="exChip(this,'styleChips')">ダーク</div>
+      </div>
+      <div class="fl">メインカラー</div>
+      <div class="row" style="margin-top:4px">
+        <input type="color" id="mainColor" value="#7c3aed" oninput="syncColor(this.value)">
+        <input type="text" id="mainColorHex" value="#7c3aed" placeholder="#7c3aed" oninput="syncColor(this.value)" style="width:80px">
+        <div style="display:flex;gap:3px">
+          <div onclick="setColor('#e1306c')" style="width:18px;height:18px;border-radius:50%;background:#e1306c;cursor:pointer;border:1px solid var(--bd)"></div>
+          <div onclick="setColor('#7c3aed')" style="width:18px;height:18px;border-radius:50%;background:#7c3aed;cursor:pointer;border:1px solid var(--bd)"></div>
+          <div onclick="setColor('#0891b2')" style="width:18px;height:18px;border-radius:50%;background:#0891b2;cursor:pointer;border:1px solid var(--bd)"></div>
+          <div onclick="setColor('#16a34a')" style="width:18px;height:18px;border-radius:50%;background:#16a34a;cursor:pointer;border:1px solid var(--bd)"></div>
+          <div onclick="setColor('#f59e0b')" style="width:18px;height:18px;border-radius:50%;background:#f59e0b;cursor:pointer;border:1px solid var(--bd)"></div>
+        </div>
+      </div>
+      <div class="fl">ページ構成</div>
+      <div class="chips" id="pageChips">
+        <div class="chip on" onclick="toggleChip(this)">TOP</div>
+        <div class="chip on" onclick="toggleChip(this)">メニュー・料金</div>
+        <div class="chip on" onclick="toggleChip(this)">スタッフ紹介</div>
+        <div class="chip on" onclick="toggleChip(this)">お客様の声</div>
+        <div class="chip on" onclick="toggleChip(this)">アクセス</div>
+        <div class="chip" onclick="toggleChip(this)">ギャラリー</div>
+        <div class="chip" onclick="toggleChip(this)">採用情報</div>
+      </div>
+      <div class="fl">追加機能</div>
+      <div class="chips" id="featureChips">
+        <div class="chip on" onclick="toggleChip(this)">問い合わせフォーム</div>
+        <div class="chip on" onclick="toggleChip(this)">SEO最適化</div>
+        <div class="chip" onclick="toggleChip(this)">Googleアナリティクス</div>
+        <div class="chip on" onclick="toggleChip(this)">SNSリンク</div>
+        <div class="chip" onclick="toggleChip(this)">LINE予約ボタン</div>
+      </div>
+
+      <!-- 詳細情報アコーディオン -->
+      <button class="acc-btn" id="accBtn" onclick="toggleAcc()">＋ 詳細情報を追加（任意）</button>
+      <div class="acc-body" id="accBody">
+        <div class="fl">メニュー・料金</div>
+        <textarea id="menuInfo" rows="3" placeholder="例：カット ¥4,400&#10;カラー ¥8,800〜"></textarea>
+        <div class="fl">営業時間・定休日</div>
+        <input type="text" id="bizHours" placeholder="例：10:00〜20:00 水曜定休">
+        <div class="fl">住所（詳細）</div>
+        <input type="text" id="fullAddr" placeholder="例：福岡市中央区天神1-1-1 2F">
+        <div class="fl">最寄り駅・アクセス</div>
+        <input type="text" id="access" placeholder="例：天神駅 徒歩3分">
+        <div class="fl">Instagram URL</div>
+        <input type="text" id="instaUrl" placeholder="https://instagram.com/...">
+        <div class="fl">LINE URL</div>
+        <input type="text" id="lineUrl" placeholder="https://lin.ee/...">
+        <div class="fl">予約サイト URL</div>
+        <input type="text" id="bookingUrl" placeholder="https://beauty.hotpepper.jp/...">
+        <div class="fl">Googleマップ URL</div>
+        <input type="text" id="mapUrl" placeholder="https://maps.google.com/...">
+        <div class="fl">スタッフ情報</div>
+        <textarea id="staffInfo" rows="2" placeholder="例：田中 花子 / オーナー / カラー得意"></textarea>
+        <div class="fl">お客様の声</div>
+        <textarea id="reviewInfo" rows="2" placeholder="例：「いつも丁寧です」40代女性"></textarea>
+        <div class="fl">その他</div>
+        <textarea id="otherInfo" rows="2" placeholder="例：完全個室・英語対応可"></textarea>
+      </div>
+      <button class="btn btn-p" onclick="generateFromForm()">✨ この情報でHP生成</button>
+    </div>
+
+    <!-- 🖼 画像 -->
+    <div class="rsec" id="rs-img">
+      <div class="fl">ヒーロー画像</div>
+      <div class="img-zone" id="heroZone" onclick="document.getElementById('heroIn').click()">
+        <img id="heroEl" style="display:none">
+        <button class="img-clear" id="heroClear" style="display:none" onclick="event.stopPropagation();clearImgData('hero')">×</button>
+        <div id="heroEmpty" style="font-size:11px;color:var(--muted)">🖼 クリックで選択</div>
+      </div>
+      <input type="file" id="heroIn" accept="image/*" style="display:none" onchange="handleImgUp(this,'hero')">
+      <div class="fl">ロゴ画像</div>
+      <div class="img-zone" id="logoZone" onclick="document.getElementById('logoIn').click()" style="height:60px">
+        <img id="logoEl" style="display:none">
+        <button class="img-clear" id="logoClear" style="display:none" onclick="event.stopPropagation();clearImgData('logo')">×</button>
+        <div id="logoEmpty" style="font-size:11px;color:var(--muted)">🏷 ロゴ（PNG推奨）</div>
+      </div>
+      <input type="file" id="logoIn" accept="image/*" style="display:none" onchange="handleImgUp(this,'logo')">
+      <div class="fl">ギャラリー画像（最大8枚）</div>
+      <div class="img-zone" onclick="document.getElementById('galleryIn').click()" style="height:50px">
+        <div style="font-size:11px;color:var(--muted)" id="galleryLabel">🖼 複数選択OK</div>
+      </div>
+      <div id="galleryPrev" style="display:flex;flex-wrap:wrap;margin-top:5px"></div>
+      <input type="file" id="galleryIn" accept="image/*" multiple style="display:none" onchange="handleGallery(this)">
+      <div class="fl">スタッフ写真（最大5枚）</div>
+      <div class="img-zone" onclick="document.getElementById('staffIn').click()" style="height:50px">
+        <div style="font-size:11px;color:var(--muted)" id="staffLabel">👤 スタッフ写真</div>
+      </div>
+      <div id="staffPrev" style="display:flex;flex-wrap:wrap;margin-top:5px"></div>
+      <input type="file" id="staffIn" accept="image/*" multiple style="display:none" onchange="handleStaffImg(this)">
+    </div>
+
+    <!-- 🎨 参考 -->
+    <div class="rsec" id="rs-ref">
+      <div class="fl">モデルサイト URL（デザイン参考）</div>
+      <input type="text" id="modelUrl" placeholder="https://参考にしたいサイト.com">
+      <div style="font-size:10px;color:var(--muted);margin-top:3px;line-height:1.6">構成・デザイン・フォント・モーションを分析して参考にします</div>
+      <button class="btn btn-gold" onclick="analyzeModel()">🔍 モデルサイトを解析</button>
+      <div id="modelResult" style="display:none;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:10px;margin-top:6px;font-size:11px;line-height:1.8;color:var(--muted)"></div>
+      <div class="fl" style="margin-top:14px">既存サイト URL（情報引き継ぎ）</div>
+      <input type="text" id="existingUrl" placeholder="https://自分の現在のサイト.com">
+      <button class="btn btn-g" onclick="analyzeExisting()">🔗 既存サイトを解析</button>
+      <div id="existingResult" style="display:none;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:10px;margin-top:6px;font-size:11px;line-height:1.8;color:var(--muted)"></div>
+    </div>
+
+    <!-- 🔍 SEO -->
+    <div class="rsec" id="rs-seo">
+      <div class="fl">ページタイトル</div>
+      <input type="text" id="seoTitle" oninput="updSEO()" placeholder="例：美容室Bloom | 福岡市の美容室">
+      <div style="font-size:10px;color:var(--muted);margin-top:2px"><span id="seoTitleLen">0</span>/60文字</div>
+      <div class="fl">メタ説明</div>
+      <textarea id="seoDesc" rows="2" oninput="updSEO()" placeholder="例：福岡市の美容室Bloomです。完全個室で..."></textarea>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px"><span id="seoDescLen">0</span>/160文字</div>
+      <div class="fl">キーワード</div>
+      <input type="text" id="seoKw" oninput="updSEO()" placeholder="例：美容室 福岡, ヘアカラー 天神">
+      <div class="fl">OGP画像URL</div>
+      <input type="text" id="ogpImg" oninput="updSEO()" placeholder="https://example.com/ogp.jpg">
+      <div class="seo-score">
+        <span style="font-size:10px;color:var(--muted)">SEOスコア</span>
+        <div class="score-bar"><div class="score-fill sg" id="scoreFill" style="width:0%"></div></div>
+        <span id="scoreVal" style="font-size:11px;font-weight:700">0%</span>
+      </div>
+      <button class="btn btn-p" onclick="applySEO()">SEO設定を適用</button>
+    </div>
+
+    <!-- 📬 フォーム -->
+    <div class="rsec" id="rs-form">
+      <div class="fl">GAS Webhook URL</div>
+      <input type="text" id="formWebhook" placeholder="https://script.google.com/macros/...">
+      <div style="font-size:10px;color:var(--muted);margin-top:2px">GASをデプロイして取得したURL</div>
+      <div class="fl">フォーム項目</div>
+      <div class="chips" id="formChips">
+        <div class="chip on" onclick="toggleChip(this)">お名前</div>
+        <div class="chip on" onclick="toggleChip(this)">メールアドレス</div>
+        <div class="chip on" onclick="toggleChip(this)">電話番号</div>
+        <div class="chip on" onclick="toggleChip(this)">お問い合わせ内容</div>
+        <div class="chip" onclick="toggleChip(this)">希望日時</div>
+        <div class="chip" onclick="toggleChip(this)">希望メニュー</div>
+      </div>
+      <button class="btn btn-p" onclick="applyForm()">フォームを適用</button>
+    </div>
+
+    <!-- 📊 GA -->
+    <div class="rsec" id="rs-ga">
+      <div class="fl">Googleアナリティクス 測定ID</div>
+      <input type="text" id="gaId" placeholder="G-XXXXXXXXXX">
+      <div style="font-size:10px;color:var(--muted);margin-top:3px;line-height:1.7">analytics.google.comでプロパティを作成して取得。<br>訪問者数・流入元・ページビューが計測できます。</div>
+      <button class="btn btn-p" onclick="applyGA()">アナリティクスを設定</button>
+    </div>
+
+    <!-- 📦 構成 -->
+    <div class="rsec" id="rs-blks">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">現在のHP構成ブロック</div>
+      <div id="blkList"><div style="font-size:11px;color:var(--muted);text-align:center;padding:20px">HPを生成すると表示されます</div></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- 台本モーダル -->
+<div class="modal-bg" id="scriptModal">
+  <div class="modal">
+    <div class="modal-title">📋 台本を貼り付け <button class="modal-x" onclick="closeModal('scriptModal')">×</button></div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.7">HPに載せたいテキスト・構成・コピーをそのまま貼り付けてください。AIが読み取ってHP生成します。</div>
+    <textarea id="scriptInput" style="width:100%;height:260px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--text);padding:11px;font-size:11px;resize:vertical;outline:none;font-family:inherit;line-height:1.7" placeholder="台本・原稿をここに貼り付け...&#10;&#10;例：&#10;仕事を、もっとシンプルに。&#10;&#10;私たちは3つのサービスを提供します..."></textarea>
+    <div style="display:flex;gap:7px;margin-top:10px">
+      <button onclick="submitScript()" style="flex:1;padding:11px;background:var(--grad);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">この台本でHP生成</button>
+      <button onclick="closeModal('scriptModal')" style="padding:11px 16px;background:var(--s2);border:1px solid var(--bd);color:var(--muted);border-radius:8px;font-size:12px;cursor:pointer">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- セクション追加モーダル -->
+<div class="modal-bg" id="secModal">
+  <div class="modal">
+    <div class="modal-title">＋ セクション追加 <button class="modal-x" onclick="closeModal('secModal')">×</button></div>
+    <div class="sec-tmpl-grid" id="secTmplGrid"></div>
+    <button onclick="closeModal('secModal')" style="margin-top:10px;width:100%;padding:9px;background:var(--s2);border:1px solid var(--bd);color:var(--muted);border-radius:7px;font-size:12px;cursor:pointer">キャンセル</button>
+  </div>
+</div>
+
+<!-- インライン編集 -->
+<div class="ed-modal" id="edModal">
+  <div class="ed-bar">
+    <div class="ed-title">✏️ インライン編集</div>
+    <div class="ed-hint">テキストをダブルクリックで編集　画像をクリックで差し替え　セクションをクリックでツールバー表示</div>
+    <div style="flex:1"></div>
+    <button class="hbtn" onclick="edDevice('sp')">📱</button>
+    <button class="hbtn" onclick="edDevice('pc')">🖥</button>
+    <button class="hbtn" onclick="addSection()">＋ セクション追加</button>
+    <button class="hbtn" onclick="edUndo()">↩ Undo</button>
+    <button class="hbtn p" onclick="saveEd()">✓ 保存して閉じる</button>
+    <button class="hbtn" onclick="closeEd()">× 閉じる</button>
+  </div>
+  <div class="ed-body">
+    <div class="ed-props" id="edProps"></div>
+    <div class="ed-frame-wrap">
+      <div class="ed-frame-inner" id="edFrameInner">
+        <iframe id="editorFrame" sandbox="allow-same-origin allow-scripts allow-forms"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="edImgReplace" accept="image/*" style="display:none">
+
+<script>
+// ===== STATE =====
+var msgs=[], currentHTML='', htmlHistory=[], isGen=false;
+var isSP=false, attachedImg=null;
+var imgData={hero:null,logo:null,gallery:[],staff:[]};
+var modelAnalysis=null;
+var edHistory=[], currentEdHTML='';
+var edMsgAdded=false;
+
+// ===== INIT =====
+(function(){
+  try{
+    var k=localStorage.getItem('hps_key')||'';
+    if(k){document.getElementById('apiKeyInput').value=k;setApiOk();}
+    var h=localStorage.getItem('hps_html');
+    if(h){currentHTML=h;showPreview(h);}
+    var m=JSON.parse(localStorage.getItem('hps_msgs')||'[]');
+    if(m.length){msgs=m;m.forEach(function(x){addMsgEl(x.role,x.content);});}
+    else{addMsgEl('ai','こんにちは！HP Studioです。\n\nチャットで指示するだけでHPを作成・修正できます。\n\n💡 使い方：\n・「美容室のHPを作って」\n・「台本を貼り付けてHP作って」\n・「ヘッダーを黒にして」\n・右パネルで情報入力→「✨ HP生成」\n\nAPIキーを設定して始めましょう！');}
+  }catch(e){}
+  renderSecTmpls();
+  document.getElementById('mainColor').addEventListener('input',function(){syncColor(this.value);});
+  document.getElementById('chatInput').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,140)+'px';});
+})();
+
+// ===== UTILS =====
+function toast(msg,d){var t=document.getElementById('toast');t.textContent=msg;t.className='toast show';setTimeout(function(){t.className='toast';},d||2500);}
+function getKey(){try{return document.getElementById('apiKeyInput').value.trim()||localStorage.getItem('hps_key')||'';}catch(e){return '';}}
+function saveKey(){var k=document.getElementById('apiKeyInput').value.trim();if(!k){toast('APIキーを入力してください');return;}try{localStorage.setItem('hps_key',k);}catch(e){}setApiOk();toast('APIキーを保存しました');}
+function setApiOk(){document.getElementById('apiStatus').textContent='設定済み';document.getElementById('apiStatus').className='api-st api-ok';}
+function getChips(id){return Array.from(document.querySelectorAll('#'+id+' .chip.on')).map(function(c){return c.textContent;});}
+function toggleChip(el){el.classList.toggle('on');}
+function exChip(el,id){document.querySelectorAll('#'+id+' .chip').forEach(function(c){c.classList.remove('on');});el.classList.add('on');}
+function setColor(hex){document.getElementById('mainColor').value=hex;document.getElementById('mainColorHex').value=hex;}
+function syncColor(v){if(/^#[0-9a-fA-F]{6}$/.test(v))document.getElementById('mainColor').value=v;document.getElementById('mainColorHex').value=v;}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function rtab(id,el){document.querySelectorAll('.rtab').forEach(function(t){t.classList.remove('on');});el.classList.add('on');document.querySelectorAll('.rsec').forEach(function(s){s.classList.remove('on');});document.getElementById('rs-'+id).classList.add('on');}
+function toggleAcc(){var b=document.getElementById('accBody');var btn=document.getElementById('accBtn');var open=b.style.display==='block';b.style.display=open?'none':'block';btn.textContent=open?'＋ 詳細情報を追加（任意）':'－ 詳細情報を閉じる';}
+function qa(t){document.getElementById('chatInput').value=t;sendMsg();}
+
+// ===== CHAT =====
+function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
+function addMsgEl(role,content){
+  var el=document.createElement('div');el.className='msg '+(role==='user'?'u':'ai');
+  el.innerHTML='<div class="av">'+(role==='user'?'👤':'✦')+'</div><div class="bbl">'+content.replace(/\n/g,'<br>')+'</div>';
+  var c=document.getElementById('chatMsgs');c.appendChild(el);c.scrollTop=c.scrollHeight;
+}
+function showTyping(){var el=document.createElement('div');el.className='msg ai';el.id='typing';el.innerHTML='<div class="av">✦</div><div class="bbl"><div style="display:flex;gap:4px;align-items:center"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div></div>';document.getElementById('chatMsgs').appendChild(el);document.getElementById('chatMsgs').scrollTop=99999;}
+function rmTyping(){var t=document.getElementById('typing');if(t)t.remove();}
+
+async function sendMsg(){
+  if(isGen)return;
+  var inp=document.getElementById('chatInput');
+  var text=inp.value.trim();
+  if(!text&&!attachedImg)return;
+  var key=getKey();
+  if(!key){toast('APIキーを設定してください');return;}
+  inp.value='';inp.style.height='';
+  addMsgEl('user',text+(attachedImg?'\n[画像添付]':''));
+  var img=attachedImg;attachedImg=null;
+  await callAI(text,img);
+}
+
+async function callAI(userText,imgAttach){
+  isGen=true;
+  document.getElementById('sendBtn').disabled=true;
+  showTyping();
+  var isHP=/作って|生成|HP|ホームページ|ランディング|LP|サイト|台本|構成|デザイン|ページ|参考|モデル|再現|作成|制作|template|web/.test(userText.toLowerCase());
+  var isMod=currentHTML&&/変えて|修正|追加|削除|変更|にして|調整|改善|直して|もっと|変更|続き/.test(userText);
+  var sys='あなたはプロのWebデザイナーAIです。\nルール:\n1. HTMLは```html～```で囲んで完全に出力する\n2. <!DOCTYPE html>から</html>まで絶対に途中で切らない\n3. 説明文不要。コードのみ出力\n4. Googleフォント（Noto Sans JP等）使用\n5. styleタグでCSSを定義、レスポンシブ対応\n6. IntersectionObserverでスクロールアニメーション\n7. プロレベルの高品質デザイン\n8. 日本語コピーライティング\n9. セクション・余白・グラデーション・シャドウを効果的に使う';
+  var history=msgs.slice(-6).map(function(m){return {role:m.role,content:typeof m.content==='string'?m.content.replace(/```html[\s\S]*?```/g,'[HTML省略]').slice(0,300):m.content};});
+  var prompt=userText;
+  if(currentHTML&&isMod){
+    // 修正の場合は現在のHTMLの重要部分だけ渡す
+    var bodyMatch = currentHTML.match(/<body[^>]*>([\s\S]{0,2000})/);
+    var snippet = bodyMatch ? bodyMatch[1] : currentHTML.slice(0,1500);
+    prompt+='\n\n[現在のHTMLの構成（修正ベース）]\n'+snippet+'\n...(省略)';
+  }
+  var userMsg=imgAttach?[{type:'text',text:prompt},{type:'image',source:{type:'base64',media_type:'image/jpeg',data:imgAttach.split(',')[1]}}]:prompt;
+  history.push({role:'user',content:userMsg});
+  var pTimer=null;
+  var pct=0;
+  if(isHP||isMod){
+    showGen();
+    pTimer=setInterval(function(){
+      pct=Math.min(pct+7,88);
+      document.getElementById('genFill').style.width=pct+'%';
+      document.getElementById('genMsg').textContent=pct<30?'内容を分析中...':pct<60?'HTML生成中...':'デザインを調整中...';
+    },700);
+  }
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'x-api-key':getKey(),'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8192,system:sys,messages:history})});
+    if(!res.ok){var e=await res.json();throw new Error(e.error&&e.error.message||'APIエラー'+res.status);}
+    var d=await res.json();var reply=d.content[0].text;
+    var htmlM=reply.match(/```html\n?([\s\S]*?)\n?```/);
+    // ```htmlで始まるが閉じていない場合（途中切れ）→ 自動で再生成
+    if(!htmlM && reply.includes('```html')){
+      rmTyping();
+      addMsgEl('ai','⚠ 生成が途中で切れました。自動で再試行します...');
+      if(pTimer)clearInterval(pTimer);hideGen();
+      isGen=false;document.getElementById('sendBtn').disabled=false;
+      // 別のアプローチで再生成
+      setTimeout(function(){
+        callAI('以下のHP制作リクエストを、シンプルで確実に完成するHTMLで作成してください。必ず</html>まで出力。\n\nリクエスト: '+userText, null);
+      }, 1000);
+      return;
+    }
+    if(htmlM){
+      var newHTML=htmlM[1].trim();
+      // 画像プレースホルダーを置換
+      if(imgData.hero)newHTML=newHTML.split('HERO_IMG').join(imgData.hero);
+      if(imgData.logo)newHTML=newHTML.split('LOGO_IMG').join(imgData.logo);
+      imgData.gallery.forEach(function(s,i){newHTML=newHTML.split('GALLERY_IMG_'+i).join(s);});
+      imgData.staff.forEach(function(s,i){newHTML=newHTML.split('STAFF_IMG_'+i).join(s);});
+      htmlHistory.push(currentHTML);if(htmlHistory.length>10)htmlHistory.shift();
+      currentHTML=newHTML;
+      try{localStorage.setItem('hps_html',newHTML);}catch(e){}
+      showPreview(newHTML);renderBlocks(newHTML);
+      document.getElementById('dlBtn').disabled=false;
+    }
+    if(pTimer)clearInterval(pTimer);hideGen();
+    var txtReply=reply.replace(/```html[\s\S]*?```/g,'✅ HPを生成・更新しました！').trim();
+    rmTyping();addMsgEl('ai',txtReply);
+    msgs.push({role:'user',content:userText},{role:'assistant',content:txtReply});
+    try{localStorage.setItem('hps_msgs',JSON.stringify(msgs.slice(-20)));}catch(e){}
+  }catch(err){
+    try{if(pTimer)clearInterval(pTimer);}catch(e){}
+    hideGen();rmTyping();
+    addMsgEl('ai','❌ エラー: '+err.message);
+    console.error('callAI error:', err);
+  }
+  isGen=false;
+  document.getElementById('sendBtn').disabled=false;
+}
+
+// ===== PREVIEW =====
+function showPreview(html){
+  document.getElementById('emptyState').style.display='none';
+  document.getElementById('pfWrap').style.display='';
+  document.getElementById('previewFrame').srcdoc=html;
+  document.getElementById('previewUrl').textContent='preview://studio/index.html';
+}
+function showGen(){
+  try{
+    document.getElementById('genOv').classList.add('show');
+    document.getElementById('genFill').style.width='0%';
+    document.getElementById('genMsg').textContent='AIが生成しています...';
+  }catch(e){}
+}
+function hideGen(){
+  try{
+    document.getElementById('genOv').classList.remove('show');
+    document.getElementById('genFill').style.width='100%';
+  }catch(e){}
+}
+
+function toggleDevice(){isSP=!isSP;document.getElementById('prevWrap').className='prev-wrap'+(isSP?' sp':'');document.getElementById('deviceBtn').textContent=isSP?'🖥 PC':'📱 スマホ';}
+function setZoom(p,el){
+  var w=document.getElementById('pfWrap');
+  if(p===100){w.style.transform='';w.style.width='100%';w.style.height='100%';}
+  else{w.style.transformOrigin='top left';w.style.transform='scale('+p/100+')';w.style.width=(100/(p/100))+'%';w.style.height=(100/(p/100))+'%';}
+  document.querySelectorAll('.pvbtn').forEach(function(b){b.classList.remove('on');});el.classList.add('on');
+}
+
+// ===== FORM → GENERATE =====
+function generateFromForm(){
+  var name=document.getElementById('storeName').value.trim();
+  if(!name){toast('店舗名を入力してください');rtab('info',document.querySelector('.rtab'));return;}
+  var genre=document.getElementById('genre').options[document.getElementById('genre').selectedIndex].text;
+  var loc=document.getElementById('location').value;
+  var phone=document.getElementById('phone').value;
+  var str=document.getElementById('strength').value;
+  var targets=getChips('targetChips');
+  var style=getChips('styleChips')[0]||'ナチュラル';
+  var color=document.getElementById('mainColor').value;
+  var pages=getChips('pageChips');
+  var feats=getChips('featureChips');
+  var menu=document.getElementById('menuInfo').value;
+  var hours=document.getElementById('bizHours').value;
+  var addr=document.getElementById('fullAddr').value;
+  var acc=document.getElementById('access').value;
+  var insta=document.getElementById('instaUrl').value;
+  var line=document.getElementById('lineUrl').value;
+  var booking=document.getElementById('bookingUrl').value;
+  var map=document.getElementById('mapUrl').value;
+  var staff=document.getElementById('staffInfo').value;
+  var review=document.getElementById('reviewInfo').value;
+  var other=document.getElementById('otherInfo').value;
+  var modelGuide=modelAnalysis?'\n【参考サイト分析】レイアウト:'+modelAnalysis.layout+' デザイン:'+modelAnalysis.design_style+' アニメーション:'+modelAnalysis.animations+' 再現ガイド:'+modelAnalysis.reproduction_guide:'';
+
+  var prompt=[
+    name+'の'+genre+'のホームページを作成してください。',
+    '【基本情報】',
+    '店舗名: '+name,
+    '業種: '+genre,
+    loc?'所在地: '+loc:'',
+    phone?'電話: '+phone:'',
+    str?'強み: '+str:'',
+    targets.length?'ターゲット: '+targets.join('・'):'',
+    '【デザイン】スタイル: '+style+' / メインカラー: '+color,
+    '【ページ構成】'+pages.join('・'),
+    '【機能】'+feats.join('・'),
+    menu?'【メニュー・料金】\n'+menu:'',
+    hours?'営業時間: '+hours:'',
+    addr?'住所: '+addr:'',
+    acc?'アクセス: '+acc:'',
+    insta?'Instagram: '+insta:'',
+    line?'LINE: '+line:'',
+    booking?'予約サイト: '+booking:'',
+    map?'GoogleマップURL: '+map:'',
+    staff?'スタッフ: '+staff:'',
+    review?'口コミ: '+review:'',
+    other?'その他: '+other:'',
+    imgData.hero?'ヒーロー画像あり: src="HERO_IMG"として使用':'',
+    imgData.logo?'ロゴ画像あり: src="LOGO_IMG"として使用':'',
+    imgData.gallery.length?'ギャラリー'+imgData.gallery.length+'枚: GALLERY_IMG_0〜':'',
+    imgData.staff.length?'スタッフ写真'+imgData.staff.length+'枚: STAFF_IMG_0〜':'',
+    modelGuide,
+    '\n【重要】コンパクトに作ること。CSSはstyle属性のみ。JSなし。unsplash画像を活用。必ず</html>まで出力。'
+  ].filter(Boolean).join('\n');
+
+  document.getElementById('chatInput').value='';
+  addMsgEl('user','📋 フォーム情報からHP生成');
+  callAI(prompt,null);
+}
+
+// ===== SCRIPT MODAL =====
+function showScriptModal(){document.getElementById('scriptModal').classList.add('show');setTimeout(function(){document.getElementById('scriptInput').focus();},100);}
+function submitScript(){
+  var s=document.getElementById('scriptInput').value.trim();
+  if(!s){toast('台本を入力してください');return;}
+  closeModal('scriptModal');
+  addMsgEl('user','📋 台本からHP生成');
+  callAI('以下の台本・原稿をもとにホームページを作成してください。台本の内容・構成・コピーライティングをそのまま活かして、プロフェッショナルで高品質なWebサイトにしてください。\n\n台本:\n'+s,null);
+}
+
+// ===== IMAGE UPLOAD =====
+function handleImgUp(input,type){
+  var f=input.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(e){
+    imgData[type]=e.target.result;
+    document.getElementById(type+'El').src=e.target.result;
+    document.getElementById(type+'El').style.display='';
+    document.getElementById(type+'Clear').style.display='';
+    document.getElementById(type+'Empty').style.display='none';
+    toast(type==='hero'?'ヒーロー画像を設定しました':'ロゴを設定しました');
+  };r.readAsDataURL(f);
+}
+function clearImgData(type){
+  imgData[type]=null;
+  document.getElementById(type+'El').style.display='none';
+  document.getElementById(type+'El').src='';
+  document.getElementById(type+'Clear').style.display='none';
+  document.getElementById(type+'Empty').style.display='';
+}
+function handleGallery(input){
+  var files=Array.from(input.files);if(!files.length)return;
+  imgData.gallery=[];document.getElementById('galleryPrev').innerHTML='';
+  var loaded=0;
+  files.slice(0,8).forEach(function(f){
+    var r=new FileReader();
+    r.onload=function(e){
+      imgData.gallery.push(e.target.result);
+      var img=document.createElement('img');img.src=e.target.result;img.className='thumb';
+      document.getElementById('galleryPrev').appendChild(img);
+      loaded++;if(loaded===Math.min(files.length,8))document.getElementById('galleryLabel').textContent='✅ '+loaded+'枚選択済み';
+    };r.readAsDataURL(f);
+  });
+}
+function handleStaffImg(input){
+  var files=Array.from(input.files);if(!files.length)return;
+  imgData.staff=[];document.getElementById('staffPrev').innerHTML='';
+  var loaded=0;
+  files.slice(0,5).forEach(function(f){
+    var r=new FileReader();
+    r.onload=function(e){
+      imgData.staff.push(e.target.result);
+      var img=document.createElement('img');img.src=e.target.result;img.className='thumb';
+      document.getElementById('staffPrev').appendChild(img);
+      loaded++;if(loaded===Math.min(files.length,5))document.getElementById('staffLabel').textContent='✅ '+loaded+'枚選択済み';
+    };r.readAsDataURL(f);
+  });
+}
+function attachImg(input){var f=input.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){attachedImg=e.target.result;document.getElementById('chatInput').placeholder='🖼 画像添付済み。指示を入力...';toast('画像を添付しました');};r.readAsDataURL(f);}
+
+// ===== MODEL/EXISTING ANALYZE =====
+async function analyzeModel(){
+  var url=document.getElementById('modelUrl').value.trim();
+  if(!url){toast('URLを入力してください');return;}
+  var key=getKey();if(!key){toast('APIキーを設定してください');return;}
+  toast('🔍 解析中...');
+  var prompt=['以下のURLのウェブサイトを詳細に分析してください。','URL: '+url,'','JSON形式のみで出力（他テキスト不要）:','{"layout":"レイアウト構成","design_style":"デザインスタイル","color_scheme":"カラースキーム","typography":"フォント特徴","animations":"アニメーション特徴","hero_style":"ヒーロー特徴","nav_style":"ナビ特徴","special_features":"特徴的機能","spacing":"余白感","reproduction_guide":"再現ガイド（200文字）"}'].join('\n');
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'x-api-key':key,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    var d=await res.json();var text=d.content[0].text;
+    var jm=text.match(/\{[\s\S]*\}/);if(!jm)throw new Error('解析失敗');
+    modelAnalysis=JSON.parse(jm[0]);
+    document.getElementById('modelResult').innerHTML='<b>デザイン:</b> '+modelAnalysis.design_style+'<br><b>レイアウト:</b> '+modelAnalysis.layout+'<br><b>アニメーション:</b> '+modelAnalysis.animations+'<br><b>特徴:</b> '+modelAnalysis.special_features;
+    document.getElementById('modelResult').style.display='';
+    toast('✨ モデル解析完了！生成時に参考にします');
+    // チャットに誘導メッセージを追加
+    addMsgEl('ai','✨ モデルサイトの解析が完了しました！\n\nこのデザインを参考にHPを生成するには、チャットで「このデザインで○○のHPを作って」と入力してください。\nまたは右パネル「📋 情報」タブで店舗情報を入力して「✨ この情報でHP生成」ボタンを押してください。');
+  }catch(e){
+    toast('解析エラー: '+e.message);
+    addMsgEl('ai','❌ 解析エラー: '+e.message+'\n\nURLが正しいか確認してください。');
+  }
+}
+
+async function analyzeExisting(){
+  var url=document.getElementById('existingUrl').value.trim();
+  if(!url){toast('URLを入力してください');return;}
+  var key=getKey();if(!key){toast('APIキーを設定してください');return;}
+  toast('解析中...');
+  var prompt='以下のURLのサイトを分析し、ホームページ制作に必要な情報をJSON形式のみで出力（他テキスト不要）:\n{"storeName":"店名","genre":"業種","strength":"特徴","location":"場所","note":"引き継ぐ重要情報"}\nURL: '+url;
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'x-api-key':key,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:500,messages:[{role:'user',content:prompt}]})});
+    var d=await res.json();var jm=d.content[0].text.match(/\{[\s\S]*\}/);
+    if(jm){
+      var info=JSON.parse(jm[0]);
+      if(info.storeName&&!document.getElementById('storeName').value)document.getElementById('storeName').value=info.storeName;
+      if(info.strength&&!document.getElementById('strength').value)document.getElementById('strength').value=info.strength;
+      if(info.location&&!document.getElementById('location').value)document.getElementById('location').value=info.location;
+      document.getElementById('existingResult').innerHTML='店名: '+(info.storeName||'不明')+'<br>業種: '+(info.genre||'不明')+'<br>特徴: '+(info.strength||'不明')+'<br>メモ: '+(info.note||'なし');
+      document.getElementById('existingResult').style.display='';
+      toast('✅ 解析完了・情報を引き継ぎました');
+    }
+  }catch(e){toast('解析エラー: '+e.message);}
+}
+
+// ===== SEO =====
+function updSEO(){
+  var t=document.getElementById('seoTitle').value;var d=document.getElementById('seoDesc').value;var k=document.getElementById('seoKw').value;var o=document.getElementById('ogpImg').value;
+  document.getElementById('seoTitleLen').textContent=t.length;document.getElementById('seoDescLen').textContent=d.length;
+  var s=0;if(t.length>=30&&t.length<=60)s+=35;else if(t.length>0)s+=15;if(d.length>=70&&d.length<=160)s+=35;else if(d.length>0)s+=15;if(k.length>0)s+=20;if(o.length>0)s+=10;
+  document.getElementById('scoreFill').style.width=s+'%';document.getElementById('scoreVal').textContent=s+'%';
+  var cls=s>=80?'sg':s>=50?'sm':'sb';document.getElementById('scoreFill').className='score-fill '+cls;
+}
+function applySEO(){
+  if(!currentHTML){toast('先にHPを生成してください');return;}
+  var t=document.getElementById('seoTitle').value;var d=document.getElementById('seoDesc').value;var k=document.getElementById('seoKw').value;var o=document.getElementById('ogpImg').value;
+  var h=currentHTML;
+  h=h.replace(/<title>[^<]*<\/title>/i,'<title>'+t+'</title>');
+  if(!/<title>/i.test(h))h=h.replace('<head>','<head>\n<title>'+t+'</title>');
+  h=h.replace(/<meta[^>]*name=["']description["'][^>]*>/i,'');
+  h=h.replace('</head>','<meta name="description" content="'+d+'">\n<meta name="keywords" content="'+k+'">\n</head>');
+  if(o)h=h.replace('</head>','<meta property="og:title" content="'+t+'">\n<meta property="og:description" content="'+d+'">\n<meta property="og:image" content="'+o+'">\n</head>');
+  htmlHistory.push(currentHTML);currentHTML=h;try{localStorage.setItem('hps_html',h);}catch(e){}
+  showPreview(h);toast('✅ SEO設定を適用しました');
+}
+
+// ===== FORM =====
+function applyForm(){
+  if(!currentHTML){toast('先にHPを生成してください');return;}
+  var wh=document.getElementById('formWebhook').value.trim();
+  var fields=getChips('formChips');var color=document.getElementById('mainColor').value;
+  var fh='<section style="padding:60px 20px;background:#f9f9f9;text-align:center"><div style="max-width:520px;margin:0 auto"><h2 style="font-size:24px;font-weight:700;margin-bottom:8px">お問い合わせ</h2><p style="color:#666;font-size:14px;margin-bottom:24px">お気軽にご連絡ください</p><form action="'+(wh||'#')+'" method="POST" style="text-align:left">'+
+    fields.map(function(f){var isTA=f.includes('内容');return '<div style="margin-bottom:12px"><label style="display:block;font-size:12px;color:#555;margin-bottom:3px">'+f+'</label>'+(isTA?'<textarea name="'+f+'" rows="4" style="width:100%;padding:9px;border:1px solid #ddd;border-radius:6px;font-size:13px;resize:vertical"></textarea>':'<input type="text" name="'+f+'" style="width:100%;padding:9px;border:1px solid #ddd;border-radius:6px;font-size:13px">')+'</div>';}).join('')+
+    '<button type="submit" style="width:100%;padding:12px;background:'+color+';color:#fff;border:none;border-radius:7px;font-size:14px;font-weight:700;cursor:pointer">送信する</button></form></div></section>';
+  var h=currentHTML;
+  if(/<section[^>]*>[\s\S]*?<form/i.test(h)){h=h.replace(/<section[^>]*>[\s\S]*?<\/section>/gi,function(m){return /<form/i.test(m)?fh:m;});}
+  else{h=h.replace('</body>',fh+'</body>');}
+  htmlHistory.push(currentHTML);currentHTML=h;try{localStorage.setItem('hps_html',h);}catch(e){}
+  showPreview(h);toast('✅ フォームを適用しました');
+}
+
+// ===== GA =====
+function applyGA(){
+  if(!currentHTML){toast('先にHPを生成してください');return;}
+  var id=document.getElementById('gaId').value.trim();if(!id){toast('測定IDを入力してください');return;}
+  var sc='<script async src="https://www.googletagmanager.com/gtag/js?id='+id+'"><\/script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","'+id+'");<\/script>';
+  var h=currentHTML.replace('</head>',sc+'</head>');
+  htmlHistory.push(currentHTML);currentHTML=h;try{localStorage.setItem('hps_html',h);}catch(e){}
+  showPreview(h);toast('✅ Googleアナリティクスを設定しました');
+}
+
+// ===== BLOCKS =====
+function renderBlocks(html){
+  var b=[];
+  [['🎯','ヒーロー','hero|ヒーロー|mv'],['📋','サービス・メニュー','service|サービス|menu|メニュー'],['⭐','選ばれる理由','feature|特徴|選ばれ'],['💬','お客様の声','voice|口コミ|お客様'],['❓','FAQ','faq|よくある'],['📍','アクセス','access|アクセス|地図|map'],['📬','お問い合わせ','contact|フォーム|form'],['👤','スタッフ','staff|スタッフ'],['📌','フッター','footer|フッター']].forEach(function(x){if(new RegExp(x[2],'i').test(html))b.push({icon:x[0],name:x[1]});});
+  document.getElementById('blkList').innerHTML=b.length?b.map(function(x){return '<div class="blk"><div class="blk-icon">'+x.icon+'</div><div class="blk-name">'+x.name+'</div><span class="blk-st">✓ 生成済み</span></div>';}).join(''):'<div style="font-size:11px;color:var(--muted);text-align:center;padding:16px">ブロックが検出されませんでした</div>';
+}
+
+// ===== INLINE EDITOR =====
+function openInlineEditor(){
+  if(!currentHTML){toast('先にHPを生成してください');return;}
+  currentEdHTML=currentHTML;edHistory=[currentHTML];
+  document.getElementById('edModal').classList.add('show');
+  loadEdFrame(currentHTML);renderSecTmpls();
+  toast('テキストをダブルクリック・画像をクリックで編集できます');
+}
+function closeEd(){document.getElementById('edModal').classList.remove('show');}
+function saveEd(){currentHTML=currentEdHTML;htmlHistory.push(currentHTML);try{localStorage.setItem('hps_html',currentHTML);}catch(e){}showPreview(currentHTML);renderBlocks(currentHTML);closeEd();toast('✅ 保存しました！');}
+function edUndo(){if(edHistory.length<=1){toast('これ以上戻れません');return;}edHistory.pop();currentEdHTML=edHistory[edHistory.length-1];loadEdFrame(currentEdHTML);toast('元に戻しました');}
+function edDevice(m){var w=document.getElementById('edFrameInner');if(m==='sp'){w.style.width='390px';w.style.maxWidth='390px';}else{w.style.width='100%';w.style.maxWidth='1200px';}}
+function addSection(){document.getElementById('secModal').classList.add('show');}
+
+function loadEdFrame(html){
+  var edScript=`<script>
+(function(){
+  var sel=null;
+  function init(){
+    document.querySelectorAll('body *').forEach(function(el){
+      var tag=el.tagName.toLowerCase();
+      if(['script','style','head','html','body','br','hr','meta','link'].includes(tag))return;
+      el.addEventListener('mouseenter',function(e){e.stopPropagation();if(sel!==el)el.style.outline='1.5px dashed rgba(124,58,237,.6)';});
+      el.addEventListener('mouseleave',function(){if(sel!==el)el.style.outline='';});
+      if(['p','h1','h2','h3','h4','h5','h6','span','a','button','li','td','th','label','div'].includes(tag)){
+        el.addEventListener('dblclick',function(e){
+          e.stopPropagation();e.preventDefault();
+          el.contentEditable='true';el.focus();el.style.outline='2px solid #7c3aed';
+          el.addEventListener('blur',function(){el.contentEditable='false';el.style.outline='';sync();},{once:true});
+        });
+      }
+      if(tag==='img'){
+        el.style.cursor='pointer';
+        el.addEventListener('click',function(e){e.stopPropagation();window.parent.postMessage({type:'imgClick',edId:getId(el)},'*');window._pendingImg=el;});
+      }
+      if(['section','header','footer','nav'].includes(tag)){
+        el.addEventListener('click',function(e){
+          if(e.target!==el)return;
+          if(sel){sel.style.outline='';}sel=el;el.style.outline='2px solid #7c3aed';
+          showTB(el,e);
+        });
+      }
+    });
+  }
+  function getId(el){if(!el.dataset.edid)el.dataset.edid='ed'+Math.random().toString(36).slice(2,6);return el.dataset.edid;}
+  var tb=null;
+  function showTB(el,e){
+    rmTB();tb=document.createElement('div');
+    tb.style.cssText='position:fixed;top:'+(e.clientY-36)+'px;left:'+e.clientX+'px;background:#1a1a2e;border:1px solid #3a3a4a;border-radius:8px;padding:5px 7px;display:flex;gap:4px;z-index:99999;box-shadow:0 6px 20px rgba(0,0,0,.5)';
+    var btns=[['↑',function(){var p=el.previousElementSibling;if(p)el.parentNode.insertBefore(el,p);sync();}],['↓',function(){var n=el.nextElementSibling;if(n)el.parentNode.insertBefore(n,el);sync();}],['BG',function(){var c=prompt('背景色（例: #f5f5f5）');if(c){el.style.background=c;sync();}}],['×',function(){if(confirm('削除しますか？')){el.remove();sync();}}],['閉',function(){rmTB();}]];
+    btns.forEach(function(b){var btn=document.createElement('button');btn.textContent=b[0];btn.style.cssText='padding:3px 7px;border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;border:none;background:#22222c;color:#a0a0b0';btn.onclick=function(e){e.stopPropagation();b[1]();};tb.appendChild(btn);});
+    document.body.appendChild(tb);
+  }
+  function rmTB(){if(tb){tb.remove();tb=null;}}
+  function sync(){window.parent.postMessage({type:'edSync',html:document.documentElement.outerHTML},'*');}
+  var st=document.createElement('style');st.textContent='*{box-sizing:border-box}[contenteditable="true"]{outline:2px solid #7c3aed!important;min-height:1em}';document.head.appendChild(st);
+  document.addEventListener('click',function(){rmTB();});
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
+})();
+<\/script>`;
+  var ef=document.getElementById('editorFrame');
+  ef.srcdoc=html.replace('</body>',edScript+'</body>');
+  if(!edMsgAdded){
+    edMsgAdded=true;
+    window.addEventListener('message',function(e){
+      if(!e.data||!e.data.type)return;
+      if(e.data.type==='edSync'){currentEdHTML=e.data.html;edHistory.push(currentEdHTML);if(edHistory.length>15)edHistory.shift();}
+      else if(e.data.type==='imgClick'){replaceEdImg(e.data.edId);}
+    });
+  }
+}
+
+function replaceEdImg(edId){
+  var inp=document.getElementById('edImgReplace');
+  inp.onchange=function(){
+    var f=this.files[0];if(!f)return;
+    var r=new FileReader();
+    r.onload=function(ev){
+      var iDoc=document.getElementById('editorFrame').contentDocument;
+      if(iDoc){var el=iDoc.querySelector('[data-edid="'+edId+'"]');if(el){el.src=ev.target.result;currentEdHTML=iDoc.documentElement.outerHTML;toast('画像を差し替えました');}}
+    };r.readAsDataURL(f);
+  };inp.click();
+}
+
+// ===== SECTION TEMPLATES =====
+var secTmpls=[
+  {icon:'🎯',name:'ヒーロー',desc:'メインビジュアル',html:'<section style="padding:100px 20px;text-align:center;background:linear-gradient(135deg,#7c3aed,#e1306c);color:#fff"><h1 style="font-size:42px;font-weight:800;margin-bottom:16px">キャッチコピー</h1><p style="font-size:18px;opacity:.85;margin-bottom:32px">サブテキスト</p><a href="#" style="display:inline-block;padding:14px 36px;background:#fff;color:#7c3aed;border-radius:30px;font-weight:700;text-decoration:none">今すぐ予約</a></section>'},
+  {icon:'📋',name:'サービス3列',desc:'サービス紹介',html:'<section style="padding:80px 20px;background:#fff"><h2 style="text-align:center;font-size:32px;font-weight:700;margin-bottom:48px">サービス</h2><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;max-width:900px;margin:0 auto"><div style="text-align:center;padding:24px"><div style="font-size:40px;margin-bottom:12px">✂️</div><h3 style="font-size:18px;font-weight:700;margin-bottom:8px">サービス1</h3><p style="color:#666;font-size:14px;line-height:1.7">説明文をここに</p></div><div style="text-align:center;padding:24px"><div style="font-size:40px;margin-bottom:12px">💆</div><h3 style="font-size:18px;font-weight:700;margin-bottom:8px">サービス2</h3><p style="color:#666;font-size:14px;line-height:1.7">説明文をここに</p></div><div style="text-align:center;padding:24px"><div style="font-size:40px;margin-bottom:12px">🌟</div><h3 style="font-size:18px;font-weight:700;margin-bottom:8px">サービス3</h3><p style="color:#666;font-size:14px;line-height:1.7">説明文をここに</p></div></div></section>'},
+  {icon:'💬',name:'お客様の声',desc:'口コミ',html:'<section style="padding:80px 20px;background:#f9f9f9"><h2 style="text-align:center;font-size:32px;font-weight:700;margin-bottom:48px">お客様の声</h2><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;max-width:800px;margin:0 auto"><div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.06)"><p style="font-size:15px;line-height:1.8;margin-bottom:12px">「口コミテキストをここに入力」</p><div style="font-size:13px;color:#888">— 30代女性</div></div><div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.06)"><p style="font-size:15px;line-height:1.8;margin-bottom:12px">「こちらにも口コミを入力」</p><div style="font-size:13px;color:#888">— 40代女性</div></div></div></section>'},
+  {icon:'📍',name:'アクセス',desc:'地図・営業時間',html:'<section style="padding:80px 20px;background:#fff"><h2 style="text-align:center;font-size:32px;font-weight:700;margin-bottom:48px">アクセス</h2><div style="max-width:700px;margin:0 auto"><div style="background:#f3f4f6;border-radius:12px;height:300px;display:flex;align-items:center;justify-content:center;margin-bottom:24px;font-size:14px;color:#999">Googleマップをここに埋め込む</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;font-size:14px;line-height:2"><div><strong>住所</strong><br>〒000-0000<br>○○市○○区○○1-1-1</div><div><strong>営業時間</strong><br>10:00〜20:00<br>定休日: 水曜日</div></div></div></section>'},
+  {icon:'📬',name:'お問い合わせ',desc:'コンタクトフォーム',html:'<section style="padding:80px 20px;background:#f9f9f9"><h2 style="text-align:center;font-size:32px;font-weight:700;margin-bottom:24px">お問い合わせ</h2><form style="max-width:520px;margin:0 auto;background:#fff;padding:28px;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.06)"><div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">お名前 *</label><input type="text" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px"></div><div style="margin-bottom:14px"><label style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">メールアドレス *</label><input type="email" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px"></div><div style="margin-bottom:18px"><label style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">内容</label><textarea rows="4" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;resize:vertical"></textarea></div><button type="submit" style="width:100%;padding:12px;background:#7c3aed;color:#fff;border:none;border-radius:7px;font-size:14px;font-weight:700;cursor:pointer">送信する</button></form></section>'},
+  {icon:'⭐',name:'数字・実績',desc:'カウントアップ',html:'<section style="padding:80px 20px;background:#1a1a2e;color:#fff"><h2 style="text-align:center;font-size:32px;font-weight:700;margin-bottom:48px">実績</h2><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:700px;margin:0 auto;text-align:center"><div><div style="font-size:52px;font-weight:800;color:#a855f7">500+</div><div style="font-size:14px;color:#aaa;margin-top:4px">累計施術数</div></div><div><div style="font-size:52px;font-weight:800;color:#e1306c">98%</div><div style="font-size:14px;color:#aaa;margin-top:4px">顧客満足度</div></div><div><div style="font-size:52px;font-weight:800;color:#f59e0b">10年</div><div style="font-size:14px;color:#aaa;margin-top:4px">営業実績</div></div></div></section>'},
+  {icon:'❓',name:'FAQ',desc:'よくある質問',html:'<section style="padding:80px 20px;background:#f9f9f9"><h2 style="text-align:center;font-size:32px;font-weight:700;margin-bottom:48px">よくある質問</h2><div style="max-width:680px;margin:0 auto"><div style="border-bottom:1px solid #e5e7eb;padding:20px 0"><div style="font-size:15px;font-weight:700;margin-bottom:8px">Q. 質問をここに</div><div style="font-size:14px;color:#666;line-height:1.7">A. 回答をここに</div></div><div style="padding:20px 0"><div style="font-size:15px;font-weight:700;margin-bottom:8px">Q. 2つ目の質問</div><div style="font-size:14px;color:#666;line-height:1.7">A. 2つ目の回答</div></div></div></section>'},
+  {icon:'👤',name:'スタッフ紹介',desc:'チームメンバー',html:'<section style="padding:80px 20px;background:#fff"><h2 style="text-align:center;font-size:32px;font-weight:700;margin-bottom:48px">スタッフ紹介</h2><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;max-width:800px;margin:0 auto"><div style="text-align:center"><div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#e1306c);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:32px">👩</div><div style="font-size:16px;font-weight:700;margin-bottom:4px">スタッフ名</div><div style="font-size:13px;color:#888;margin-bottom:6px">ポジション</div><div style="font-size:13px;color:#555;line-height:1.6">自己紹介文</div></div><div style="text-align:center"><div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#e1306c,#f77737);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:32px">👨</div><div style="font-size:16px;font-weight:700;margin-bottom:4px">スタッフ名</div><div style="font-size:13px;color:#888;margin-bottom:6px">ポジション</div><div style="font-size:13px;color:#555;line-height:1.6">自己紹介文</div></div><div style="text-align:center"><div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#0891b2,#7c3aed);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:32px">👩</div><div style="font-size:16px;font-weight:700;margin-bottom:4px">スタッフ名</div><div style="font-size:13px;color:#888;margin-bottom:6px">ポジション</div><div style="font-size:13px;color:#555;line-height:1.6">自己紹介文</div></div></div></section>'},
+];
+
+function renderSecTmpls(){
+  document.getElementById('secTmplGrid').innerHTML=secTmpls.map(function(t,i){return '<div class="sec-tmpl" onclick="insertSec('+i+')"><div class="sec-tmpl-icon">'+t.icon+'</div><div class="sec-tmpl-name">'+t.name+'</div><div class="sec-tmpl-desc">'+t.desc+'</div></div>';}).join('');
+}
+function insertSec(i){
+  var iDoc=document.getElementById('editorFrame').contentDocument;
+  if(iDoc){var div=iDoc.createElement('div');div.innerHTML=secTmpls[i].html;var sec=div.firstElementChild;var body=iDoc.body;body.insertBefore(sec,body.lastElementChild||null);currentEdHTML=iDoc.documentElement.outerHTML;loadEdFrame(currentEdHTML);toast('「'+secTmpls[i].name+'」を追加しました');}
+  closeModal('secModal');
+}
+
+// ===== ACTIONS =====
+function undoHP(){if(!htmlHistory.length){toast('これ以上戻れません');return;}currentHTML=htmlHistory.pop();try{localStorage.setItem('hps_html',currentHTML);}catch(e){}showPreview(currentHTML);renderBlocks(currentHTML);toast('元に戻しました');addMsgEl('ai','↩ 1つ前のバージョンに戻しました');}
+function downloadHP(){if(!currentHTML){toast('先にHPを生成してください');return;}var a=document.createElement('a');a.href='data:text/html;charset=utf-8,'+encodeURIComponent(currentHTML);a.download='website.html';a.click();toast('ダウンロードしました！');}
+function openInDetailEditor(){if(!currentHTML){toast('先にHPを生成してください');return;}try{localStorage.setItem('hp_ai_generated',currentHTML);}catch(e){}window.open('homepage_generator_animated.html?from=studio','_blank');toast('詳細エディタで開きます');}
+function clearAll(){if(!confirm('チャット履歴・HP・設定をクリアしますか？'))return;msgs=[];currentHTML='';htmlHistory=[];document.getElementById('chatMsgs').innerHTML='';document.getElementById('emptyState').style.display='';document.getElementById('pfWrap').style.display='none';document.getElementById('dlBtn').disabled=true;document.getElementById('previewUrl').textContent='— まだ生成されていません —';try{localStorage.removeItem('hps_html');localStorage.removeItem('hps_msgs');}catch(e){}addMsgEl('ai','リセットしました。何でも話しかけてください！');toast('クリアしました');}
+</script>
+</body>
+</html>
